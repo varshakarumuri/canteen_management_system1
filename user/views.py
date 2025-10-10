@@ -4,21 +4,14 @@ from .models import Users, Menu, Cart
 from staff.models import ActiveOrders
 import random
 from django.core.mail import send_mail
-from django.conf import settings # Make sure this import is here
-
-# ===================================================================
-# EMAIL UTILITY FUNCTION
-# ===================================================================
+from django.conf import settings 
 def send_custom_email(subject, message, recipient_list):
-    """
-    A utility function to send an email.
-    """
     try:
         send_mail(
             subject=subject,
             message=message,
-            from_email=settings.EMAIL_HOST_USER,  # The email you configured in settings.py
-            recipient_list=recipient_list,      # A list of recipient email addresses
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=recipient_list,
             fail_silently=False,
         )
         print(f"Email sent successfully to {recipient_list}")
@@ -27,11 +20,6 @@ def send_custom_email(subject, message, recipient_list):
         print(f"Failed to send email. Error: {e}")
         return False
 
-# ===================================================================
-# VIEWS
-# ===================================================================
-
-# For simplicity, we'll use a dictionary for OTP. In a real app, use a more robust cache.
 otp_storage = {}
 
 def user_login(request):
@@ -59,7 +47,6 @@ def verify_email(request):
         otp = str(random.randint(1000, 9999))
         otp_storage[email] = otp
         
-        # --- THIS PART IS UPDATED TO SEND THE EMAIL ---
         subject = "Your OTP for E-Canteen"
         message = f"Your one-time password is: {otp}"
         send_custom_email(subject, message, [email])
@@ -110,13 +97,15 @@ def menu_page(request):
     
     menu_items = Menu.objects.all()
     cart_items = Cart.objects.filter(user_id=user_id)
-    
+    user = Users.objects.get(id=user_id)
+
     total_amount = sum(item.item.price * item.quantity for item in cart_items)
-    
+
     context = {
         'menu_items': menu_items,
         'cart_items': cart_items,
-        'total_amount': total_amount
+        'total_amount': total_amount,
+        'user': user
     }
     return render(request, 'user/menu.html', context)
 
@@ -149,12 +138,16 @@ def place_order(request):
     user = Users.objects.get(id=user_id)
     cart_items = Cart.objects.filter(user=user)
     
+
+    print('DEBUG: cart_items for receipt:', list(cart_items))
     if not cart_items:
+        print('DEBUG: No cart items found for user', user)
         return redirect('menu_page')
 
     order_id = f"{user.id}-{random.randint(10000, 99999)}"
-    
-    for item in cart_items:
+
+    cart_items_list = list(cart_items)
+    for item in cart_items_list:
         ActiveOrders.objects.create(
             user=user,
             item=item.item,
@@ -162,10 +155,10 @@ def place_order(request):
             total_amount=item.item.price * item.quantity,
             order_id=order_id
         )
-    
-    total_bill = sum(item.item.price * item.quantity for item in cart_items)
+
+    total_bill = sum(item.item.price * item.quantity for item in cart_items_list)
     receipt_context = {
-        'ordered_items': cart_items,
+        'ordered_items': cart_items_list,
         'total_bill': total_bill,
         'message': 'Order placed successfully!'
     }
@@ -229,26 +222,17 @@ def add_to_cart(request, item_id):
         menu_item = Menu.objects.get(id=item_id)
         user = Users.objects.get(id=user_id)
     except (Menu.DoesNotExist, Users.DoesNotExist):
-        # Handle cases where user or item doesn't exist, though unlikely
         return redirect('menu_page')
 
     if menu_item.quantity > 0:
-        # get_or_create will find an existing item or create a new one.
-        # The 'defaults' dictionary is ONLY used when creating a new item.
         cart_item, created = Cart.objects.get_or_create(
             user=user,
             item=menu_item,
             defaults={'quantity': 1}
         )
-
-        # If the cart item was NOT newly created, it means it already existed.
-        # So, we increment its quantity.
         if not created:
             cart_item.quantity += 1
             cart_item.save()
-
-        # Decrease the available quantity from the main menu and save it.
         menu_item.quantity -= 1
         menu_item.save()
-
     return redirect('menu_page')

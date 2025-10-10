@@ -1,27 +1,19 @@
 {% extends 'base.html' %}
-
 {% block title %}User Registration{% endblock %}
-
 {% block content %}
     <h2>Complete Your Registration</h2>
     <p>Registering for: <strong>{{ email }}</strong></p>
-
     <form method="post">
         {% csrf_token %}
         <input type="hidden" name="otp" value="{{ request.POST.otp }}">
-
         <label for="name">Name</label><br>
         <input type="text" name="name" id="name" required><br><br>
-
         <label for="phone">Phone Number</label><br>
         <input type="text" name="phone" id="phone" required><br><br>
-
         <label for="address">Address</label><br>
         <textarea name="address" id="address" rows="4" style="width: 250px;" required></textarea><br><br>
-
         <label for="password">Password</label><br>
         <input type="password" name="password" id="password" required><br><br>
-
         <button type="submit">Register</button>
     </form>
 {% endblock %}

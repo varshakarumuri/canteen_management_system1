@@ -1,23 +1,20 @@
 {% extends 'base.html' %}
-
 {% block title %}Order Receipt{% endblock %}
-
 {% block content %}
     <h2>Order Receipt</h2>
-
     {% if message %}
         <h3 class="success">{{ message }}</h3>
     {% endif %}
-    
     <h4>Your Order Summary:</h4>
     <ul>
         {% for item in ordered_items %}
-            <li>{{ item.item.item_name }} (x{{ item.quantity }}) - ${{ item.item.price|floatformat:2 }} each</li>
+            <li>{{ item.item.item_name }} (x{{ item.quantity }}) - ₹{{ item.item.price|floatformat:2 }} each</li>
+        {% empty %}
+            <li>No items in your order.</li>
         {% endfor %}
     </ul>
     <hr>
-    <h3>Total Bill: ${{ total_bill|floatformat:2 }}</h3>
-
+    <h3>Total Bill: ₹{{ total_bill|floatformat:2 }}</h3>
     <br>
     <a href="{% url 'menu_page' %}"><button>Go Back to Menu</button></a>
 {% endblock %}

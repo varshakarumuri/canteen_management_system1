@@ -1,14 +1,10 @@
 {% extends 'base.html' %}
-
 {% block title %}Verify Email{% endblock %}
-
 {% block content %}
     <h2>Email Verification for Registration</h2>
-
     {% if error %}
         <p class="error">{{ error }}</p>
     {% endif %}
-
     {% if not otp_sent %}
         <p>Please enter your email to receive an OTP.</p>
         <form method="post">

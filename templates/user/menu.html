@@ -1,31 +1,154 @@
-<h1>Canteen Menu</h1>
+{% extends 'base.html' %}
+{% block title %}Menu{% endblock %}
 
-<hr>
-
-<h2>Your Cart</h2>
-{% if cart_items %}
-    <ul>
-    {% for cart_item in cart_items %}
-        <li>{{ cart_item.item.name }} - Quantity: {{ cart_item.quantity }} - Price: ${{ cart_item.item.price }}</li>
-    {% endfor %}
-    </ul>
-    <h3>Total: ${{ total_amount }}</h3>
-    <a href="{% url 'place_order' %}"><button>Place Order</button></a>
-{% else %}
-    <p>Your cart is empty.</p>
-{% endif %}
-
-<hr>
-
-<h2>Available Items</h2>
-{% for item in menu_items %}
-    <div>
-        <h4>{{ item.name }}</h4>
-        <p>{{ item.description }}</p>
-        <p>Price: ${{ item.price }} | Available: {{ item.quantity }}</p>
-        <a href="{% url 'add_to_cart' item.id %}"><button>Add to Cart</button></a>
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        <a href="#" id="profile-link">Profile</a>
+        <a href="{% url 'change_password' %}">Change Password</a>
+        <a href="{% url 'user_logout' %}">Logout</a>
     </div>
-    <br>
-{% endfor %}
+</div>
+{% endblock %}
 
-<a href="{% url 'user_logout' %}">Logout</a>
+{% block content %}
+<div>
+    <h1 style="display:none;">E-Canteen</h1>
+    <hr>
+    <div id="profile-section" style="display:none; text-align:left; max-width:400px; margin-bottom:32px;">
+        <h2>User Profile</h2>
+        <form id="profile-form" method="post" action="{% url 'user_profile' %}">
+            {% csrf_token %}
+            <label for="name">Name</label><br>
+            <input type="text" name="name" id="name" value="{{ user.name }}" required readonly><br><br>
+            <label for="email">Email (cannot be changed)</label><br>
+            <input type="email" name="email" id="email" value="{{ user.email }}" disabled><br><br>
+            <label for="phone_number">Phone Number</label><br>
+            <input type="text" name="phone_number" id="phone_number" value="{{ user.phone_number }}" required readonly><br><br>
+            <label for="address">Address</label><br>
+            <textarea name="address" id="address" rows="4" style="width: 250px;" required readonly>{{ user.address }}</textarea><br><br>
+            <div id="profile-btns">
+                <button type="button" id="edit-btn">Edit</button>
+                <button type="submit" id="save-btn" style="display:none;">Save</button>
+                <button type="button" id="cancel-btn" style="display:none;">Cancel</button>
+            </div>
+        </form>
+    </div>
+    <h2>Your Cart</h2>
+    {% if cart_items %}
+        <ul>
+        {% for cart_item in cart_items %}
+            <li>{{ cart_item.item.name }} - Quantity: {{ cart_item.quantity }} - Price: ₹{{ cart_item.item.price }}</li>
+        {% endfor %}
+        </ul>
+        <h3>Total: ₹{{ total_amount }}</h3>
+        <a href="{% url 'place_order' %}"><button>Place Order</button></a>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+    <hr>
+    <h2>Available Items</h2>
+    <div class="menu-container">
+            {% for item in menu_items %}
+                <div class="menu-item">
+                    <img src="{{ item.photo.url }}" alt="{{ item.item_name }}" width="150" height="150">
+                    <h3>{{ item.item_name }}</h3>
+                    <p>Price: ₹{{ item.price }}</p>
+                    <p>Available: {{ item.quantity }}</p>
+                    {% if item.quantity > 0 %}
+                        <form method="post" action="{% url 'add_to_cart' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Add to Cart</button>
+                        </form>
+                    {% else %}
+                        <button type="button" disabled style="background: #ccc; color: #fff; cursor: not-allowed;">Out of Stock</button>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p>No items available.</p>
+            {% endfor %}
+        </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var profileLink = document.getElementById('profile-link');
+        var profileSection = document.getElementById('profile-section');
+        var editBtn = document.getElementById('edit-btn');
+        var saveBtn = document.getElementById('save-btn');
+        var cancelBtn = document.getElementById('cancel-btn');
+        var nameInput = document.getElementById('name');
+        var phoneInput = document.getElementById('phone_number');
+        var addressInput = document.getElementById('address');
+        var form = document.getElementById('profile-form');
+        var original = {
+            name: nameInput.value,
+            phone: phoneInput.value,
+            address: addressInput.value
+        };
+
+        function setReadOnlyMode() {
+            nameInput.readOnly = true;
+            phoneInput.readOnly = true;
+            addressInput.readOnly = true;
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        }
+        function setEditMode() {
+            nameInput.readOnly = false;
+            phoneInput.readOnly = false;
+            addressInput.readOnly = false;
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        }
+
+        setReadOnlyMode();
+
+        profileLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (profileSection.style.display === 'none' || profileSection.style.display === '') {
+                profileSection.style.display = 'block';
+                setReadOnlyMode();
+                // Reset values to original
+                nameInput.value = original.name;
+                phoneInput.value = original.phone;
+                addressInput.value = original.address;
+            } else {
+                profileSection.style.display = 'none';
+            }
+        });
+
+        editBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            setEditMode();
+        });
+
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            nameInput.value = original.name;
+            phoneInput.value = original.phone;
+            addressInput.value = original.address;
+            setReadOnlyMode();
+        });
+
+        form.addEventListener('submit', function(e) {
+            if (nameInput.readOnly) {
+                // Prevent submit if not in edit mode
+                e.preventDefault();
+            } else {
+                setReadOnlyMode();
+                // After submit, update original values
+                original.name = nameInput.value;
+                original.phone = phoneInput.value;
+                original.address = addressInput.value;
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+

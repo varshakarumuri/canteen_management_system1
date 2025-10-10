@@ -7,7 +7,7 @@ class Users(models.Model):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
     address = models.TextField()
-    password = models.CharField(max_length=128) # Store hashed passwords
+    password = models.CharField(max_length=128)
 
     def __str__(self):
         return self.name
@@ -15,7 +15,7 @@ class Users(models.Model):
 class Menu(models.Model):
     item_name = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='menu_photos/')
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=6, decimal_places=2)
     quantity = models.IntegerField()
 
     def __str__(self):
@@ -27,4 +27,4 @@ class Cart(models.Model):
     quantity = models.IntegerField()
 
     class Meta:
-        unique_together = ('user', 'item') # Ensures a user has only one entry per item
+        unique_together = ('user', 'item')

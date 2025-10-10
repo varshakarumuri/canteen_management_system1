@@ -2,11 +2,17 @@
 <html>
 <head>
     <title>Welcome to E-Canteen</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<body>
-    <h1>Welcome to the E-Canteen!</h1>
-    <p>
-        <a href="/user/login/">User Login</a> | 
-        <a href="/staff/login/">Staff Login</a>  </p>
+<body style="background: #f4f6fb; min-height: 100vh; margin: 0;">
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <div style="background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 48px 36px; max-width: 400px; width: 100%; text-align: center;">
+            <h1 style="color: #007bff; margin-bottom: 18px;">Welcome to E-Canteen!</h1>
+            <p style="color: #555; font-size: 1.1rem; margin-bottom: 32px;">Order your favorite food easily and quickly.</p>
+            <a href="/user/login/" style="display: inline-block; background: #007bff; color: #fff; padding: 12px 32px; border-radius: 6px; font-size: 1.1rem; text-decoration: none; margin: 0 8px 16px 8px; transition: background 0.2s;">User Login</a>
+            <a href="/staff/login/" style="display: inline-block; background: #6c757d; color: #fff; padding: 12px 32px; border-radius: 6px; font-size: 1.1rem; text-decoration: none; margin: 0 8px 16px 8px; transition: background 0.2s;">Staff Login</a>
+        </div>
+    </div>
 </body>
 </html>

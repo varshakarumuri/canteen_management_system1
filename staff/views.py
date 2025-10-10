@@ -4,11 +4,7 @@ from .models import Staff, ActiveOrders
 from django.core.mail import send_mail
 from django.conf import settings
 
-# Utility function to handle sending emails
 def send_custom_email(subject, message, recipient_list):
-    """
-    A utility function to send an email.
-    """
     try:
         send_mail(
             subject=subject,
@@ -23,7 +19,6 @@ def send_custom_email(subject, message, recipient_list):
         print(f"Failed to send email. Error: {e}")
         return False
 
-# Your existing view for staff login
 def staff_login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -39,7 +34,6 @@ def staff_login(request):
             return render(request, 'staff/login.html', {'error': 'Invalid credentials'})
     return render(request, 'staff/login.html')
 
-# Your existing view for the orders page
 def orders_page(request):
     staff_id = request.session.get('staff_id')
     if not staff_id:
@@ -62,30 +56,19 @@ def orders_page(request):
     }
     return render(request, 'staff/orders.html', context)
 
-# CORRECTED view for marking an order as ready
 def order_ready(request, order_id):
     staff_id = request.session.get('staff_id')
     if not staff_id:
         return redirect('staff_login')
-    
     orders_to_remove = ActiveOrders.objects.filter(order_id=order_id)
     if orders_to_remove:
-        # Get the user's email from the first item in the order
         user_email = orders_to_remove.first().user.email
-        
-        # Define the email subject and message
         subject = "Your E-Canteen Order is Ready!"
         message = f"Your order ({order_id}) is ready for pickup. Thank you for ordering!"
-        
-        # Call the utility function to send the email
         send_custom_email(subject, message, [user_email])
-        
-        # Delete the order from the active orders table
         orders_to_remove.delete()
-        
     return redirect('orders_page')
 
-# Your existing view for the staff profile
 def staff_profile(request):
     staff_id = request.session.get('staff_id')
     if not staff_id:
@@ -93,7 +76,6 @@ def staff_profile(request):
     staff = Staff.objects.get(id=staff_id)
     return render(request, 'staff/profile.html', {'staff': staff})
 
-# Your existing view for staff logout
 def staff_logout(request):
     if 'staff_id' in request.session:
         del request.session['staff_id']
