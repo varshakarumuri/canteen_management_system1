@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Profile{% endblock %}
+
+{% block content %}
+    <h2>Staff Profile</h2>
+    <a href="{% url 'orders_page' %}">← Back to Orders</a>
+    <hr>
+    
+    <p><strong>Name:</strong> {{ staff.name }}</p>
+    <p><strong>Email:</strong> {{ staff.email }}</p>
+    <p><strong>Staff ID:</strong> {{ staff.id }}</p>
+{% endblock %}

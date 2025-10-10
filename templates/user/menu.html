@@ -1,0 +1,31 @@
+<h1>Canteen Menu</h1>
+
+<hr>
+
+<h2>Your Cart</h2>
+{% if cart_items %}
+    <ul>
+    {% for cart_item in cart_items %}
+        <li>{{ cart_item.item.name }} - Quantity: {{ cart_item.quantity }} - Price: ${{ cart_item.item.price }}</li>
+    {% endfor %}
+    </ul>
+    <h3>Total: ${{ total_amount }}</h3>
+    <a href="{% url 'place_order' %}"><button>Place Order</button></a>
+{% else %}
+    <p>Your cart is empty.</p>
+{% endif %}
+
+<hr>
+
+<h2>Available Items</h2>
+{% for item in menu_items %}
+    <div>
+        <h4>{{ item.name }}</h4>
+        <p>{{ item.description }}</p>
+        <p>Price: ${{ item.price }} | Available: {{ item.quantity }}</p>
+        <a href="{% url 'add_to_cart' item.id %}"><button>Add to Cart</button></a>
+    </div>
+    <br>
+{% endfor %}
+
+<a href="{% url 'user_logout' %}">Logout</a>

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Email{% endblock %}
+
+{% block content %}
+    <h2>Email Verification for Registration</h2>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if not otp_sent %}
+        <p>Please enter your email to receive an OTP.</p>
+        <form method="post">
+            {% csrf_token %}
+            <label for="email">Email</label><br>
+            <input type="email" name="email" id="email" required><br><br>
+            <button type="submit">Verify</button>
+        </form>
+    {% else %}
+        <p>An OTP has been sent to <strong>{{ email }}</strong>. Please check your inbox.</p>
+        <form action="{% url 'user_register' %}" method="post">
+            {% csrf_token %}
+            <label for="otp">Enter OTP</label><br>
+            <input type="text" name="otp" id="otp" required><br><br>
+            <button type="submit">Validate OTP</button>
+        </form>
+    {% endif %}
+    <p>Already have an account? <a href="{% url 'user_login' %}">Login here</a></p>
+{% endblock %}

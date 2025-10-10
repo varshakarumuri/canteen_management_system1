@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Active Orders{% endblock %}
+
+{% block content %}
+    <style>
+        .order-card { border: 1px solid #ccc; border-radius: 5px; padding: 15px; margin-bottom: 20px; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+
+    <div class="navbar">
+        <h2>E-Canteen Staff Panel</h2>
+        <div>
+            <a href="{% url 'staff_profile' %}">Profile</a> | 
+            <a href="{% url 'staff_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <h3>Total Active Orders: {{ total_orders_count }}</h3>
+    <hr>
+
+    {% if not grouped_orders %}
+        <p>No active orders at the moment.</p>
+    {% else %}
+        {% for order_id, order_data in grouped_orders.items %}
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <strong>Order ID:</strong> {{ order_id }} <br>
+                        <strong>User:</strong> {{ order_data.user_name }} <br>
+                        <strong>Address:</strong> {{ order_data.user_address }}
+                    </div>
+                    <div>
+                        <a href="{% url 'order_ready' order_id %}"><button>Mark as Ready</button></a>
+                    </div>
+                </div>
+                <hr>
+                <ul>
+                    {% for item in order_data.items %}
+                        <li>{{ item.item.item_name }} - <strong>Quantity: {{ item.quantity }}</strong></li>
+                    {% endfor %}
+                </ul>
+                <strong>Total Bill: ${{ order_data.total|floatformat:2 }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
