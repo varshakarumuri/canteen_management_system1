@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
-from .models import Staff, ActiveOrders
+from .models import Staff, ActiveOrders, CompletedOrder
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -66,6 +66,15 @@ def order_ready(request, order_id):
         subject = "Your E-Canteen Order is Ready!"
         message = f"Your order ({order_id}) is ready for pickup. Thank you for ordering!"
         send_custom_email(subject, message, [user_email])
+        # Move each ActiveOrders entry into CompletedOrder before deleting
+        for order in orders_to_remove:
+            CompletedOrder.objects.create(
+                user=order.user,
+                item=order.item,
+                quantity=order.quantity,
+                total_amount=order.total_amount,
+                order_id=order.order_id,
+            )
         orders_to_remove.delete()
     return redirect('orders_page')
 
@@ -75,6 +84,14 @@ def staff_profile(request):
         return redirect('staff_login')
     staff = Staff.objects.get(id=staff_id)
     return render(request, 'staff/profile.html', {'staff': staff})
+
+
+def completed_orders_view(request):
+    staff_id = request.session.get('staff_id')
+    if not staff_id:
+        return redirect('staff_login')
+    completed = CompletedOrder.objects.all().order_by('-completed_at')
+    return render(request, 'staff/completed_orders.html', {'completed_orders': completed})
 
 def staff_logout(request):
     if 'staff_id' in request.session:

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Staff, ActiveOrders
+from .models import Staff, ActiveOrders, CompletedOrder
 from django.contrib.auth.hashers import make_password
 
 
@@ -15,3 +15,4 @@ class StaffAdmin(admin.ModelAdmin):
 
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(ActiveOrders)
+admin.site.register(CompletedOrder)

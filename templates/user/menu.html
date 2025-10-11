@@ -49,6 +49,13 @@
     {% endif %}
     <hr>
     <h2>Available Items</h2>
+    <form method="get" action="" style="margin-bottom:16px; display:flex; gap:8px; align-items:center;">
+        <input type="text" name="q" placeholder="Search items by name" value="{{ request.GET.q }}" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:240px;">
+        <button type="submit" style="padding:8px 12px; border-radius:6px; background:#007bff; color:#fff; border:none;">Search</button>
+        {% if request.GET.q %}
+            <a href="{% url 'menu_page' %}" style="margin-left:8px; color:#007bff;">Clear</a>
+        {% endif %}
+    </form>
     <div class="menu-container">
             {% for item in menu_items %}
                 <div class="menu-item">

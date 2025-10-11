@@ -95,7 +95,11 @@ def menu_page(request):
     if not user_id:
         return redirect('user_login')
     
-    menu_items = Menu.objects.all()
+    query = request.GET.get('q', '').strip()
+    if query:
+        menu_items = Menu.objects.filter(item_name__icontains=query)
+    else:
+        menu_items = Menu.objects.all()
     cart_items = Cart.objects.filter(user_id=user_id)
     user = Users.objects.get(id=user_id)
 

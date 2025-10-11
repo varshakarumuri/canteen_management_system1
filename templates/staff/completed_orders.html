@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Completed Orders{% endblock %}
+
+{% block content %}
+    <div class="navbar">
+        <h2>E-Canteen Staff Panel</h2>
+        <div>
+            <a href="{% url 'staff_profile' %}">Profile</a> | 
+            <a href="{% url 'orders_page' %}">Active Orders</a> | 
+            <a href="{% url 'staff_logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <h3>Completed Orders</h3>
+    <hr>
+
+    {% if not completed_orders %}
+        <p>No completed orders yet.</p>
+    {% else %}
+        {% for order in completed_orders %}
+            <div class="order-card">
+                <div>
+                    <strong>Order ID:</strong> {{ order.order_id }} <br>
+                    <strong>User:</strong> {{ order.user.name }} <br>
+                    <strong>Item:</strong> {{ order.item.item_name }} <br>
+                    <strong>Quantity:</strong> {{ order.quantity }} <br>
+                    <strong>Total:</strong> ₹{{ order.total_amount }} <br>
+                    <!-- <strong>Completed at:</strong> {{ order.completed_at }} -->
+                </div>
+            </div>
+            <hr>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
