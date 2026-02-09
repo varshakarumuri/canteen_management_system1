@@ -5,7 +5,8 @@
 <div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
     <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
     <div style="display: flex; gap: 24px;">
-        <a href="#" id="profile-link">Profile</a>
+        <a href="{% url 'cart_page' %}" style="font-weight: bold; color: #ff6b6b;">🛒 Cart ({{ cart_items.count }})</a>
+        <a href="{% url 'user_profile' %}">Profile</a>
         <a href="{% url 'change_password' %}">Change Password</a>
         <a href="{% url 'user_logout' %}">Logout</a>
     </div>
@@ -15,38 +16,6 @@
 {% block content %}
 <div>
     <h1 style="display:none;">E-Canteen</h1>
-    <hr>
-    <div id="profile-section" style="display:none; text-align:left; max-width:400px; margin-bottom:32px;">
-        <h2>User Profile</h2>
-        <form id="profile-form" method="post" action="{% url 'user_profile' %}">
-            {% csrf_token %}
-            <label for="name">Name</label><br>
-            <input type="text" name="name" id="name" value="{{ user.name }}" required readonly><br><br>
-            <label for="email">Email (cannot be changed)</label><br>
-            <input type="email" name="email" id="email" value="{{ user.email }}" disabled><br><br>
-            <label for="phone_number">Phone Number</label><br>
-            <input type="text" name="phone_number" id="phone_number" value="{{ user.phone_number }}" required readonly><br><br>
-            <label for="address">Address</label><br>
-            <textarea name="address" id="address" rows="4" style="width: 250px;" required readonly>{{ user.address }}</textarea><br><br>
-            <div id="profile-btns">
-                <button type="button" id="edit-btn">Edit</button>
-                <button type="submit" id="save-btn" style="display:none;">Save</button>
-                <button type="button" id="cancel-btn" style="display:none;">Cancel</button>
-            </div>
-        </form>
-    </div>
-    <h2>Your Cart</h2>
-    {% if cart_items %}
-        <ul>
-        {% for cart_item in cart_items %}
-            <li>{{ cart_item.item.name }} - Quantity: {{ cart_item.quantity }} - Price: ₹{{ cart_item.item.price }}</li>
-        {% endfor %}
-        </ul>
-        <h3>Total: ₹{{ total_amount }}</h3>
-        <a href="{% url 'place_order' %}"><button>Place Order</button></a>
-    {% else %}
-        <p>Your cart is empty.</p>
-    {% endif %}
     <hr>
     <h2>Available Items</h2>
     <form method="get" action="" style="margin-bottom:16px; display:flex; gap:8px; align-items:center;">
@@ -66,10 +35,10 @@
                     {% if item.quantity > 0 %}
                         <form method="post" action="{% url 'add_to_cart' item.id %}">
                             {% csrf_token %}
-                            <button type="submit">Add to Cart</button>
+                            <button  type="submit" class="menu-item button">Add to Cart</button>
                         </form>
                     {% else %}
-                        <button type="button" disabled style="background: #ccc; color: #fff; cursor: not-allowed;">Out of Stock</button>
+                        <button type="button" disabled style="background: #ccc; color: #fff; cursor: not-allowed;" class="menu-item button">Out of Stock</button>
                     {% endif %}
                 </div>
             {% empty %}
@@ -77,83 +46,6 @@
             {% endfor %}
         </div>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var profileLink = document.getElementById('profile-link');
-        var profileSection = document.getElementById('profile-section');
-        var editBtn = document.getElementById('edit-btn');
-        var saveBtn = document.getElementById('save-btn');
-        var cancelBtn = document.getElementById('cancel-btn');
-        var nameInput = document.getElementById('name');
-        var phoneInput = document.getElementById('phone_number');
-        var addressInput = document.getElementById('address');
-        var form = document.getElementById('profile-form');
-        var original = {
-            name: nameInput.value,
-            phone: phoneInput.value,
-            address: addressInput.value
-        };
-
-        function setReadOnlyMode() {
-            nameInput.readOnly = true;
-            phoneInput.readOnly = true;
-            addressInput.readOnly = true;
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        }
-        function setEditMode() {
-            nameInput.readOnly = false;
-            phoneInput.readOnly = false;
-            addressInput.readOnly = false;
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-        }
-
-        setReadOnlyMode();
-
-        profileLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (profileSection.style.display === 'none' || profileSection.style.display === '') {
-                profileSection.style.display = 'block';
-                setReadOnlyMode();
-                // Reset values to original
-                nameInput.value = original.name;
-                phoneInput.value = original.phone;
-                addressInput.value = original.address;
-            } else {
-                profileSection.style.display = 'none';
-            }
-        });
-
-        editBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            setEditMode();
-        });
-
-        cancelBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            nameInput.value = original.name;
-            phoneInput.value = original.phone;
-            addressInput.value = original.address;
-            setReadOnlyMode();
-        });
-
-        form.addEventListener('submit', function(e) {
-            if (nameInput.readOnly) {
-                // Prevent submit if not in edit mode
-                e.preventDefault();
-            } else {
-                setReadOnlyMode();
-                // After submit, update original values
-                original.name = nameInput.value;
-                original.phone = phoneInput.value;
-                original.address = addressInput.value;
-            }
-        });
-    });
-</script>
 {% endblock %}
 
 

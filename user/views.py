@@ -183,15 +183,22 @@ def user_profile(request):
 
     user = Users.objects.get(id=user_id)
     message = ''
+    error = ''
 
     if request.method == 'POST':
-        user.name = request.POST.get('name')
-        user.phone_number = request.POST.get('phone_number')
-        user.address = request.POST.get('address')
-        user.save()
-        message = 'Profile updated successfully!'
+        phone_number = request.POST.get('phone_number', '').strip()
+        
+        # Validate phone number: exactly 10 digits
+        if not phone_number.isdigit() or len(phone_number) != 10:
+            error = 'Phone number must be exactly 10 digits.'
+        else:
+            user.name = request.POST.get('name')
+            user.phone_number = phone_number
+            user.address = request.POST.get('address')
+            user.save()
+            message = 'Profile updated successfully!'
 
-    return render(request, 'user/profile.html', {'user': user, 'message': message})
+    return render(request, 'user/profile.html', {'user': user, 'message': message, 'error': error})
 
 
 def change_password(request):
@@ -214,6 +221,75 @@ def change_password(request):
             error = 'Incorrect old password.'
 
     return render(request, 'user/change_password.html', {'error': error})
+
+def cart_page(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('user_login')
+    
+    cart_items = Cart.objects.filter(user_id=user_id)
+    
+    # Calculate subtotal for each cart item
+    for item in cart_items:
+        item.subtotal = item.item.price * item.quantity
+    
+    total_amount = sum(item.subtotal for item in cart_items)
+    
+    context = {
+        'cart_items': cart_items,
+        'total_amount': total_amount,
+    }
+    return render(request, 'user/cart.html', context)
+
+def increase_quantity(request, cart_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('user_login')
+    
+    cart_item = Cart.objects.get(id=cart_id, user_id=user_id)
+    menu_item = cart_item.item
+    
+    if menu_item.quantity > 0:
+        cart_item.quantity += 1
+        cart_item.save()
+        menu_item.quantity -= 1
+        menu_item.save()
+    
+    return redirect('cart_page')
+
+def decrease_quantity(request, cart_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('user_login')
+    
+    cart_item = Cart.objects.get(id=cart_id, user_id=user_id)
+    menu_item = cart_item.item
+    
+    if cart_item.quantity > 1:
+        cart_item.quantity -= 1
+        cart_item.save()
+        menu_item.quantity += 1
+        menu_item.save()
+    else:
+        cart_item.delete()
+        menu_item.quantity += 1
+        menu_item.save()
+    
+    return redirect('cart_page')
+
+def remove_from_cart(request, cart_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('user_login')
+    
+    cart_item = Cart.objects.get(id=cart_id, user_id=user_id)
+    menu_item = cart_item.item
+    
+    menu_item.quantity += cart_item.quantity
+    menu_item.save()
+    cart_item.delete()
+    
+    return redirect('cart_page')
 
 # Replace your old add_to_cart function with this one
 

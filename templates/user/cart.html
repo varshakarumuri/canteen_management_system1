@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Shopping Cart{% endblock %}
+
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        <a href="{% url 'cart_page' %}" style="font-weight: bold; color: #ff6b6b;">🛒 Cart ({{ cart_items.count }})</a>
+        <a href="{% url 'menu_page' %}">Back to Menu</a>
+        <a href="{% url 'user_profile' %}">Profile</a>
+        <a href="{% url 'change_password' %}">Change Password</a>
+        <a href="{% url 'user_logout' %}">Logout</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 24px;">
+        <h1 style="margin-top: 0;">Shopping Cart</h1>
+        <hr style="margin: 16px 0;">
+        
+        {% if cart_items %}
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Item Name</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Price</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Quantity</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Subtotal</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cart_item in cart_items %}
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 12px; border: 1px solid #dee2e6;">{{ cart_item.item.item_name }}</td>
+                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">₹{{ cart_item.item.price }}</td>
+                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <form method="post" action="{% url 'decrease_quantity' cart_item.id %}" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <button type="submit" style="padding: 4px 6px; width: 28px; height: 28px; background-color: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">−</button>
+                                    </form>
+                                    <span style="min-width: 25px; text-align: center; font-weight: bold;">{{ cart_item.quantity }}</span>
+                                    <form method="post" action="{% url 'increase_quantity' cart_item.id %}" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <button type="submit" style="padding: 4px 6px; width: 28px; height: 28px; background-color: #51cf66; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">+</button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; ">₹{{ cart_item.subtotal|floatformat:2 }}</td>
+                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
+                                <form method="post" action="{% url 'remove_from_cart' cart_item.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="padding: 6px 12px; background-color: #868e96; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="background-color: #f8f9fa; padding: 16px; border-radius: 6px; text-align: right; margin-bottom: 24px; border: 1px solid #dee2e6;">
+                <h2 style="margin: 0;">Total Amount: <span style="color: #007bff;">₹{{ total_amount|floatformat:2 }}</span></h2>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <a href="{% url 'menu_page' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-size: 14px;">Continue Shopping</a>
+                <a href="{% url 'place_order' %}" style="padding: 10px 20px; background-color: #51cf66; color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px;">Place Order</a>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px;">
+                <p style="font-size: 1.2rem; color: #666;">Your cart is empty.</p>
+                <a href="{% url 'menu_page' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; margin-top: 20px; display: inline-block; font-size: 14px;">Continue Shopping</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
