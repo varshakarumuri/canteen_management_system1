@@ -1,10 +1,43 @@
 {% extends 'base.html' %}
 {% block title %}Staff Profile{% endblock %}
+
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        <a href="{% url 'orders_page' %}">Active Orders</a>
+        <a href="{% url 'completed_orders' %}">Completed Orders</a>
+        <a href="{% url 'staff_logout' %}">Logout</a>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-    <h2>Staff Profile</h2>
-    <a href="{% url 'orders_page' %}">← Back to Orders</a>
-    <hr>
-    <p><strong>Name:</strong> {{ staff.name }}</p>
-    <p><strong>Email:</strong> {{ staff.email }}</p>
-    <p><strong>Staff ID:</strong> {{ staff.id }}</p>
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px;">
+        <h1 style="text-align: center; color: #333; margin-top: 0;">Staff Profile</h1>
+        <hr style="margin: 20px 0;">
+        
+        <div style="text-align: left;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Name</label>
+                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.name }}</div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Email</label>
+                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.email }}</div>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Staff ID</label>
+                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.id }}</div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <a href="{% url 'orders_page' %}" style="padding: 12px 30px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; text-align: center; font-weight: bold; font-size: 14px;">Back to Orders</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

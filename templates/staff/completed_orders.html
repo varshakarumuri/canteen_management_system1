@@ -2,34 +2,70 @@
 
 {% block title %}Completed Orders{% endblock %}
 
-{% block content %}
-    <div class="navbar">
-        <h2>E-Canteen Staff Panel</h2>
-        <div>
-            <a href="{% url 'staff_profile' %}">Profile</a> | 
-            <a href="{% url 'orders_page' %}">Active Orders</a> | 
-            <a href="{% url 'staff_logout' %}">Logout</a>
-        </div>
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        <a href="{% url 'orders_page' %}">Active Orders</a>
+        <a href="{% url 'staff_profile' %}">Profile</a>
+        <a href="{% url 'staff_logout' %}">Logout</a>
     </div>
+</div>
+{% endblock %}
 
-    <h3>Completed Orders</h3>
-    <hr>
+{% block content %}
+    <div>
+        <h1 style="display:none;">E-Canteen Staff Panel</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="margin: 0;">Completed Orders</h2>
+            <h3 style="margin: 0; color: #28a745;">Today: {{ today_orders_count }} Orders</h3>
+        </div>
+        <hr>
 
-    {% if not completed_orders %}
+    {% if not grouped_completed_orders %}
         <p>No completed orders yet.</p>
     {% else %}
-        {% for order in completed_orders %}
-            <div class="order-card">
-                <div>
-                    <strong>Order ID:</strong> {{ order.order_id }} <br>
-                    <strong>User:</strong> {{ order.user.name }} <br>
-                    <strong>Item:</strong> {{ order.item.item_name }} <br>
-                    <strong>Quantity:</strong> {{ order.quantity }} <br>
-                    <strong>Total:</strong> ₹{{ order.total_amount }} <br>
-                    <!-- <strong>Completed at:</strong> {{ order.completed_at }} -->
+        <div class="menu-container">
+            {% for order_id, order_data in grouped_completed_orders.items %}
+                <div class="menu-item" style="width: 390px;">
+                    <div style="text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="padding: 12px; background: #f0f8ff; border-radius: 6px;">
+                            <strong style="color: #007bff; display: block; margin-bottom: 4px;">Order ID: {{ order_id }}</strong>
+                            <div style="font-size: 0.9rem; color: #555; line-height: 1.5;">
+                                <strong>User:</strong> {{ order_data.user_name }}<br>
+                                <strong>Address:</strong> {{ order_data.user_address }}
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 12px; background: #fefef8; border-radius: 6px;">
+                            <strong style="display: block; margin-bottom: 6px; color: #222;">Items:</strong>
+                            <ul style="margin: 0; padding-left: 16px;">
+                                {% for item in order_data.items %}
+                                    <li style="margin-bottom: 4px; font-size: 0.95rem;">{{ item.item.item_name }} <strong>x{{ item.quantity }}</strong></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div style="padding: 12px; background: #f0fff4; border-radius: 6px; border-left: 4px solid #2ecc40;">
+                            <strong style="display: block; color: #2ecc40; font-size: 1.1rem;">Total: ₹{{ order_data.total|floatformat:2 }}</strong>
+                        </div>
+
+                        <div style="padding: 12px; background: #e8f4f8; border-radius: 6px;">
+                            <strong style="display: block; color: #555; font-size: 0.9rem;">Completed: {{ order_data.completed_at|date:"d M, Y - h:i A" }} IST</strong>
+                        </div>
+                    </div>
                 </div>
+            {% endfor %}
+        </div>
+        
+        {% if grouped_completed_orders %}
+        <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
+            <div style="padding: 20px; background: #f0fff4; border: 2px solid #2ecc40; border-radius: 8px; text-align: right; width: 300px;">
+                <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">Total Amount (Today)</div>
+                <div style="font-size: 2rem; font-weight: bold; color: #2ecc40;">₹{{ today_total_amount|floatformat:2 }}</div>
             </div>
-            <hr>
-        {% endfor %}
+        </div>
+        {% endif %}
     {% endif %}
+    </div>
 {% endblock %}

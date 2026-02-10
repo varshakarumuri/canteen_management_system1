@@ -2,42 +2,64 @@
 
 {% block title %}Active Orders{% endblock %}
 
-{% block content %}
-    <div class="navbar">
-        <h2>E-Canteen Staff Panel</h2>
-        <div>
-            <a href="{% url 'staff_profile' %}">Profile</a> | 
-            <a href="{% url 'completed_orders' %}">Completed Orders</a> | 
-            <a href="{% url 'staff_logout' %}">Logout</a>
-        </div>
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        
+        <a href="{% url 'completed_orders' %}">Completed Orders</a>
+        <a href="{% url 'staff_profile' %}">Profile</a>
+        <a href="{% url 'staff_logout' %}">Logout</a>
     </div>
+</div>
+{% endblock %}
 
-    <h3>Total Active Orders: {{ total_orders_count }}</h3>
-    <hr>
+{% block content %}
+    <div>
+        <h1 style="display:none;">E-Canteen Staff Panel</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="margin: 0;">Active Orders</h2>
+            <h3 style="margin: 0; color: #007bff;">Total: {{ total_orders_count }}</h3>
+        </div>
+        <hr>
 
     {% if not grouped_orders %}
         <p>No active orders at the moment.</p>
     {% else %}
-        {% for order_id, order_data in grouped_orders.items %}
-            <div class="order-card">
-                <div class="order-header">
-                    <div>
-                        <strong>Order ID:</strong> {{ order_id }} <br>
-                        <strong>User:</strong> {{ order_data.user_name }} <br>
-                        <strong>Address:</strong> {{ order_data.user_address }}
-                    </div>
-                    <div>
-                        <a href="{% url 'order_ready' order_id %}"><button>Mark as Ready</button></a>
+        <div class="menu-container">
+            {% for order_id, order_data in grouped_orders.items %}
+                <div class="menu-item" style="width: 390px;">
+                    <div style="text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="padding: 12px; background: #f0f8ff; border-radius: 6px;">
+                            <strong style="color: #007bff; display: block; margin-bottom: 4px;">Order ID: {{ order_id }}</strong>
+                            <div style="font-size: 0.9rem; color: #555; line-height: 1.5;">
+                                <strong>User:</strong> {{ order_data.user_name }}<br>
+                                <strong>Address:</strong> {{ order_data.user_address }}
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 12px; background: #fefef8; border-radius: 6px;">
+                            <strong style="display: block; margin-bottom: 6px; color: #222;">Items:</strong>
+                            <ul style="margin: 0; padding-left: 16px;">
+                                {% for item in order_data.items %}
+                                    <li style="margin-bottom: 4px; font-size: 0.95rem;">{{ item.item.item_name }} <strong>x{{ item.quantity }}</strong></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div style="padding: 12px; background: #f0fff4; border-radius: 6px; border-left: 4px solid #2ecc40;">
+                            <strong style="display: block; color: #2ecc40; font-size: 1.1rem;">Total: ₹{{ order_data.total|floatformat:2 }}</strong>
+                        </div>
+
+                        <a href="{% url 'order_ready' order_id %}" style="text-decoration: none;">
+                            <button style=" width: 100%; background: #28a745; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s;">
+                                ✓ Mark as Ready
+                            </button>
+                        </a>
                     </div>
                 </div>
-                <hr>
-                <ul>
-                    {% for item in order_data.items %}
-                        <li>{{ item.item.item_name }} - <strong>Quantity: {{ item.quantity }}</strong></li>
-                    {% endfor %}
-                </ul>
-                <strong>Total Bill: ₹{{ order_data.total|floatformat:2 }}</strong>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     {% endif %}
+</div>
 {% endblock %}

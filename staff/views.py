@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import check_password, make_password
 from .models import Staff, ActiveOrders, CompletedOrder
@@ -90,8 +91,35 @@ def completed_orders_view(request):
     staff_id = request.session.get('staff_id')
     if not staff_id:
         return redirect('staff_login')
-    completed = CompletedOrder.objects.all().order_by('-completed_at')
-    return render(request, 'staff/completed_orders.html', {'completed_orders': completed})
+    
+    # Get only today's completed orders
+    today = timezone.now().date()
+    completed = CompletedOrder.objects.filter(completed_at__date=today).order_by('-completed_at')
+    
+    # Group orders by order_id
+    grouped_completed_orders = {}
+    for order in completed:
+        if order.order_id not in grouped_completed_orders:
+            grouped_completed_orders[order.order_id] = {
+                'items': [],
+                'user_name': order.user.name,
+                'user_address': order.user.address,
+                'total': 0,
+                'completed_at': order.completed_at
+            }
+        grouped_completed_orders[order.order_id]['items'].append(order)
+        grouped_completed_orders[order.order_id]['total'] += order.total_amount
+    
+    # Calculate today's totals
+    today_order_ids = completed.values('order_id').distinct().count()
+    today_total_amount = sum(order.total_amount for order in completed)
+    
+    context = {
+        'grouped_completed_orders': grouped_completed_orders,
+        'today_orders_count': today_order_ids,
+        'today_total_amount': today_total_amount,
+    }
+    return render(request, 'staff/completed_orders.html', context)
 
 def staff_logout(request):
     if 'staff_id' in request.session:
