@@ -35,7 +35,10 @@ def user_login(request):
                 return render(request, 'user/login.html', {'error': 'Invalid password'})
         except Users.DoesNotExist:
             return render(request, 'user/login.html', {'error': 'User not found'})
-    return render(request, 'user/login.html')
+    
+    # Check if there's a success message from password reset
+    message = request.session.pop('password_reset_success', None)
+    return render(request, 'user/login.html', {'message': message} if message else {})
 
 def verify_email(request):
     if request.method == 'POST':
@@ -316,3 +319,68 @@ def add_to_cart(request, item_id):
         menu_item.quantity -= 1
         menu_item.save()
     return redirect('menu_page')
+
+def forgot_password_verify(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        if not Users.objects.filter(email=email).exists():
+            return render(request, 'user/forgot_password.html', {'error': 'Email not found.'})
+
+        otp = str(random.randint(1000, 9999))
+        otp_storage[email] = otp
+        
+        subject = "Your OTP for Password Reset - E-Canteen"
+        message = f"Your one-time password for password reset is: {otp}"
+        send_custom_email(subject, message, [email])
+        
+        request.session['reset_email'] = email
+        return render(request, 'user/forgot_password.html', {'email': email, 'otp_sent': True})
+        
+    return render(request, 'user/forgot_password.html')
+
+def reset_password(request):
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('forgot_password_verify')
+
+    if request.method == 'POST':
+        # Step 1: OTP Verification
+        if 'otp' in request.POST:
+            entered_otp = request.POST.get('otp')
+            if otp_storage.get(email) == entered_otp:
+                # OTP verified, show password reset form
+                return render(request, 'user/reset_password.html', {'email': email, 'otp_verified': True})
+            else:
+                # Invalid OTP, go back to forgot password
+                return render(request, 'user/forgot_password.html', {'email': email, 'otp_sent': True, 'error': 'Invalid OTP'})
+        
+        # Step 2: Password Update
+        elif 'new_password' in request.POST:
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if new_password == confirm_password:
+                # Update password in database
+                user = Users.objects.get(email=email)
+                user.password = make_password(new_password)
+                user.save()
+                
+                # Clean up OTP storage
+                if email in otp_storage:
+                    del otp_storage[email]
+                
+                # Store success message in session
+                request.session['password_reset_success'] = 'Password reset successfully! Please login with your new password.'
+                
+                # Clean up reset_email from session
+                if 'reset_email' in request.session:
+                    del request.session['reset_email']
+                
+                # Redirect to login
+                return redirect('user_login')
+            else:
+                # Passwords don't match
+                return render(request, 'user/reset_password.html', {'email': email, 'otp_verified': True, 'error': 'Passwords do not match.'})
+            
+    return redirect('forgot_password_verify')
