@@ -40,7 +40,7 @@ def orders_page(request):
     if not staff_id:
         return redirect('staff_login')
 
-    active_orders = ActiveOrders.objects.all().order_by('order_id')
+    active_orders = ActiveOrders.objects.all()
     grouped_orders = {}
     for order in active_orders:
         if order.order_id not in grouped_orders:
@@ -51,8 +51,13 @@ def orders_page(request):
         grouped_orders[order.order_id]['items'].append(order)
         grouped_orders[order.order_id]['total'] += order.total_amount
 
+    # Sort grouped_orders by order number (numeric part after dash) in ascending order
+    sorted_grouped_orders = {}
+    for order_id in sorted(grouped_orders.keys(), key=lambda x: int(x.split('-')[1])):
+        sorted_grouped_orders[order_id] = grouped_orders[order_id]
+
     context = {
-        'grouped_orders': grouped_orders,
+        'grouped_orders': sorted_grouped_orders,
         'total_orders_count': ActiveOrders.objects.values('order_id').distinct().count(),
     }
     return render(request, 'staff/orders.html', context)
@@ -94,7 +99,7 @@ def completed_orders_view(request):
     
     # Get only today's completed orders
     today = timezone.now().date()
-    completed = CompletedOrder.objects.filter(completed_at__date=today).order_by('-completed_at')
+    completed = CompletedOrder.objects.filter(completed_at__date=today)
     
     # Group orders by order_id
     grouped_completed_orders = {}
@@ -110,12 +115,17 @@ def completed_orders_view(request):
         grouped_completed_orders[order.order_id]['items'].append(order)
         grouped_completed_orders[order.order_id]['total'] += order.total_amount
     
+    # Sort grouped_completed_orders by order number (numeric part after dash) in ascending order
+    sorted_grouped_completed_orders = {}
+    for order_id in sorted(grouped_completed_orders.keys(), key=lambda x: int(x.split('-')[1])):
+        sorted_grouped_completed_orders[order_id] = grouped_completed_orders[order_id]
+    
     # Calculate today's totals
     today_order_ids = completed.values('order_id').distinct().count()
     today_total_amount = sum(order.total_amount for order in completed)
     
     context = {
-        'grouped_completed_orders': grouped_completed_orders,
+        'grouped_completed_orders': sorted_grouped_completed_orders,
         'today_orders_count': today_order_ids,
         'today_total_amount': today_total_amount,
     }

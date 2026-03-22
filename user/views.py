@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password, check_password
 from .models import Users, Menu, Cart
-from staff.models import ActiveOrders
+from staff.models import ActiveOrders, CompletedOrder
 import random
 from django.core.mail import send_mail
 from django.conf import settings 
@@ -151,7 +151,12 @@ def place_order(request):
         print('DEBUG: No cart items found for user', user)
         return redirect('menu_page')
 
-    order_id = f"{user.id}-{random.randint(10000, 99999)}"
+    # Count total orders (distinct order_ids in both ActiveOrders and CompletedOrder)
+    active_orders_count = ActiveOrders.objects.values('order_id').distinct().count()
+    completed_orders_count = CompletedOrder.objects.values('order_id').distinct().count()
+    total_orders = active_orders_count + completed_orders_count
+    order_number = total_orders + 1
+    order_id = f"{user.id}-{str(order_number).zfill(5)}"
 
     cart_items_list = list(cart_items)
     for item in cart_items_list:
