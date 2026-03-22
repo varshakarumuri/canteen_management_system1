@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Active Orders{% endblock %}
+
+{% block navbar %}
+<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
+    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
+    <div style="display: flex; gap: 24px;">
+        <a href="{% url 'cart_page' %}" style="font-weight: bold; color: #ff6b6b;">🛒 Cart</a>
+        <a href="{% url 'menu_page' %}">Menu</a>
+        <a href="{% url 'user_profile' %}">Profile</a>
+        <a href="{% url 'change_password' %}">Change Password</a>
+        <a href="{% url 'user_logout' %}">Logout</a>
+    </div>
+</div>
+<div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+    <a href="{% url 'user_active_orders' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">📦 Active Orders</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div>
+    <h1 style="display:none;">E-Canteen</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin: 0;">My Orders (Today)</h2>
+        <h3 style="margin: 0; color: #007bff;">Active Orders: {{ total_active_orders }}</h3>
+    </div>
+    <hr>
+
+    {% if not ordered_items %}
+        <p>No orders placed today.</p>
+    {% else %}
+        <div class="menu-container">
+            {% for order_id, order_data in ordered_items.items %}
+                <div class="menu-item" style="width: 390px;">
+                    <div style="text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="padding: 12px; background: #f0f8ff; border-radius: 6px;">
+                            <strong style="color: #007bff; display: block; margin-bottom: 4px;">Order ID: {{ order_id }}</strong>
+                            <div style="font-size: 0.9rem; color: #555; line-height: 1.5;">
+                                {% if order_data.status == 'Preparation in Process' %}
+                                    <strong>Date:</strong> {{ order_data.created_at|date:"d-m-Y" }}<br>
+                                    <strong>Time:</strong> {{ order_data.created_at|time:"H:i" }}<br>
+                                {% else %}
+                                    <strong>Date:</strong> {{ order_data.completed_at|date:"d-m-Y" }}<br>
+                                    <strong>Time:</strong> {{ order_data.completed_at|time:"H:i" }}<br>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 12px; background: #fefef8; border-radius: 6px;">
+                            <strong style="display: block; margin-bottom: 6px; color: #222;">Items:</strong>
+                            <ul style="margin: 0; padding-left: 16px;">
+                                {% for item in order_data.items %}
+                                    <li style="margin-bottom: 4px; font-size: 0.95rem;">{{ item.item.item_name }} <strong>x{{ item.quantity }}</strong></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div style="padding: 12px; background: #f0fff4; border-radius: 6px; border-left: 4px solid #2ecc40;">
+                            <strong style="display: block; margin-bottom: 4px;">Total Amount:</strong>
+                            <span style="font-size: 1.1rem; color: #2ecc40; font-weight: bold;">₹{{ order_data.total }}</span>
+                        </div>
+
+                        <div style="padding: 12px; border-radius: 6px; border: 2px solid #007bff;">
+                            <strong style="display: block; margin-bottom: 4px; color: #007bff;">Status:</strong>
+                            {% if order_data.status == 'Preparation in Process' %}
+                                <span style="color: #ff9800; font-weight: bold;">🔄 Preparation in Process</span>
+                            {% elif order_data.status == 'Ready to Collect' %}
+                                <span style="color: #2ecc40; font-weight: bold;">✓ Ready to Collect</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

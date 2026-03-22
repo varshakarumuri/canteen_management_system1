@@ -5,6 +5,7 @@ from staff.models import ActiveOrders, CompletedOrder
 import random
 from django.core.mail import send_mail
 from django.conf import settings 
+from django.utils import timezone
 def send_custom_email(subject, message, recipient_list):
     try:
         send_mail(
@@ -389,3 +390,56 @@ def reset_password(request):
                 return render(request, 'user/reset_password.html', {'email': email, 'otp_verified': True, 'error': 'Passwords do not match.'})
             
     return redirect('forgot_password_verify')
+
+def user_active_orders(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('user_login')
+    
+    user = Users.objects.get(id=user_id)
+    today = timezone.now().date()
+    
+    # Get today's active orders
+    active_orders = ActiveOrders.objects.filter(user=user, created_at__date=today).order_by('-created_at')
+    
+    # Get today's completed orders
+    completed_orders = CompletedOrder.objects.filter(user=user, completed_at__date=today).order_by('-completed_at')
+    
+    # Group active orders by order_id
+    grouped_active_orders = {}
+    for order in active_orders:
+        if order.order_id not in grouped_active_orders:
+            grouped_active_orders[order.order_id] = {
+                'items': [],
+                'total': 0,
+                'created_at': order.created_at,
+                'status': 'Preparation in Process'
+            }
+        grouped_active_orders[order.order_id]['items'].append(order)
+        grouped_active_orders[order.order_id]['total'] += order.total_amount
+    
+    # Group completed orders by order_id
+    grouped_completed_orders = {}
+    for order in completed_orders:
+        if order.order_id not in grouped_completed_orders:
+            grouped_completed_orders[order.order_id] = {
+                'items': [],
+                'total': 0,
+                'completed_at': order.completed_at,
+                'status': 'Ready to Collect'
+            }
+        grouped_completed_orders[order.order_id]['items'].append(order)
+        grouped_completed_orders[order.order_id]['total'] += order.total_amount
+    
+    # Combine and sort by order number
+    all_orders = {**grouped_active_orders, **grouped_completed_orders}
+    sorted_orders = {}
+    for order_id in sorted(all_orders.keys(), key=lambda x: int(x.split('-')[1])):
+        sorted_orders[order_id] = all_orders[order_id]
+    
+    context = {
+        'ordered_items': sorted_orders,
+        'user': user,
+        'total_active_orders': len(grouped_active_orders)
+    }
+    return render(request, 'user/active_orders.html', context)

@@ -1,6 +1,7 @@
 # staff/models.py
 
 from django.db import models
+from django.utils import timezone
 from user.models import Users, Menu
 
 class Staff(models.Model):
@@ -17,6 +18,7 @@ class ActiveOrders(models.Model):
     quantity = models.IntegerField()
     total_amount = models.FloatField()
     order_id = models.CharField(max_length=100, default='default_order_id')
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Order for {self.user.name} - {self.item.item_name}"
