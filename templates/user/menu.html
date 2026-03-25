@@ -1,56 +1,253 @@
 {% extends 'base.html' %}
-{% block title %}Menu{% endblock %}
+{% load static %}
 
-{% block navbar %}
-<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
-    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
-    <div style="display: flex; gap: 24px;">
-        <a href="{% url 'cart_page' %}" style="font-weight: bold; color: #ff6b6b;">🛒 Cart ({{ cart_items.count }})</a>
-        <a href="{% url 'user_profile' %}">Profile</a>
-        <a href="{% url 'change_password' %}">Change Password</a>
-        <a href="{% url 'user_logout' %}">Logout</a>
-    </div>
-</div>
-<div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
-    <a href="{% url 'user_active_orders' %}" style="padding: 10px 20px; background-color: #869db6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Active Orders</a>
-</div>
-{% endblock %}
+{% block title %}Menu - E-Canteen{% endblock %}
 
 {% block content %}
-<div>
-    <h1 style="display:none;">E-Canteen</h1>
-    <hr>
-    <h2>Available Items</h2>
-    <form method="get" action="" style="margin-bottom:16px; display:flex; gap:8px; align-items:center;">
-        <input type="text" name="q" placeholder="Search items by name" value="{{ request.GET.q }}" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:240px;">
-        <button type="submit" style="padding:8px 12px; border-radius:6px; background:#007bff; color:#fff; border:none;">Search</button>
-        {% if request.GET.q %}
-            <a href="{% url 'menu_page' %}" style="margin-left:8px; color:#007bff;">Clear</a>
-        {% endif %}
-    </form>
-    <div class="menu-container">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary: #ff6b35; /* Updated to match home page buttons */
+    --secondary: #3E2723;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Background - EXACT MATCH TO HOME PAGE */
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(50, 25, 15, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center a {
+    margin: 0 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    transition: var(--transition);
+}
+.nav-center a:hover { color: var(--primary); }
+.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+.cart { position: relative; text-decoration: none; color: white; font-size: 1.2rem; }
+.cart span {
+    position: absolute;
+    top: -8px; right: -12px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+.logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.logout:hover { background: rgba(255,255,255,0.1); }
+
+/* CONTAINER - EXACT MATCH TO HERO-CONTENT ON HOME PAGE */
+.container-modern {
+    position: relative;
+    z-index: 2;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-container {
+    text-align: center;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 50px; /* Exact Home Page Padding */
+    border: 2px solid rgba(255, 255, 255, 0.2); /* Exact Home Page Border */
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1); /* Exact Home Page Tint */
+    backdrop-filter: blur(5px);
+    animation: fadeInScale 0.8s ease;
+}
+
+/* Adjustments for Title within the Glass Container */
+.page-container h1 {
+    font-size: 3rem;
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+.page-container p {
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 30px;
+}
+
+/* SEARCH BOX SYNC */
+.search-box { margin-bottom: 40px; }
+.search-box input {
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.9);
+    width: 300px;
+    outline: none;
+}
+.search-box button {
+    padding: 12px 30px;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, var(--primary) 0%, #ff9a56 100%);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* MENU GRID & CARDS */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+.card-modern {
+    background: white; /* Cards remain white for readability, but styled like feature-cards */
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: var(--transition);
+}
+.card-modern:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(255, 107, 53, 0.2);
+}
+.card-modern img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+.card-title { font-weight: 700; color: #333; font-size: 1.1rem; }
+.card-price { color: var(--primary); font-weight: 700; margin: 10px 0; font-size: 1.2rem; }
+.stock { font-size: 0.8rem; color: #666; margin-bottom: 15px; }
+
+.btn-add {
+    width: 100%;
+    padding: 10px;
+    border-radius: 50px;
+    border: none;
+    background: var(--secondary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-add:hover { background: var(--primary); }
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .page-container { padding: 40px 20px; width: 95%; }
+    .nav-center { display: none; }
+    .search-box input { width: 100%; }
+    .search-box form { display: flex; flex-direction: column; gap: 10px; }
+}
+</style>
+
+<div class="home-bg-blur"></div>
+
+<nav class="navbar">
+    <div class="nav-left">🍽️ E-Canteen</div>
+    <div class="nav-center">
+        <a href="/">Home</a>
+        <a href="{% url 'user_active_orders' %}">Orders</a>
+        <a href="{% url 'user_profile' %}">Profile</a>
+    </div>
+    <div class="nav-right">
+        <a href="{% url 'cart_page' %}" class="cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span>{{ cart_items.count }}</span>
+        </a>
+        <a href="{% url 'user_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
+
+<div class="container-modern">
+    <div class="page-container">
+        <h1>Our Menu</h1>
+        <p>Your go-to platform for ordering delicious meals anytime.</p>
+
+        <div class="search-box">
+            <form method="get">
+                <input type="text" name="q" placeholder="Search for food..." value="{{ request.GET.q }}">
+                <button type="submit">SEARCH</button>
+            </form>
+        </div>
+
+        <div class="menu-grid">
             {% for item in menu_items %}
-                <div class="menu-item">
-                    <img src="{{ item.photo.url }}" alt="{{ item.item_name }}" width="150" height="150">
-                    <h3>{{ item.item_name }}</h3>
-                    <p>Price: ₹{{ item.price }}</p>
-                    <p>Available: {{ item.quantity }}</p>
-                    {% if item.quantity > 0 %}
-                        <form method="post" action="{% url 'add_to_cart' item.id %}">
-                            {% csrf_token %}
-                            <button  type="submit" class="menu-item button">Add to Cart</button>
-                        </form>
-                    {% else %}
-                        <button type="button" disabled style="background: #ccc; color: #fff; cursor: not-allowed;" class="menu-item button">Out of Stock</button>
-                    {% endif %}
-                </div>
-            {% empty %}
-                <p>No items available.</p>
+            <div class="card-modern">
+                {% if item.photo %}
+                    <img src="{{ item.photo.url }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200">
+                {% endif %}
+                
+                <div class="card-title">{{ item.item_name }}</div>
+                <div class="card-price">₹{{ item.price }}</div>
+                <div class="stock">Stock Available: {{ item.quantity }}</div>
+
+                {% if item.quantity > 0 %}
+                <form method="post" action="{% url 'add_to_cart' item.id %}">
+                    {% csrf_token %}
+                    <button class="btn-add">ADD TO CART</button>
+                </form>
+                {% else %}
+                <button class="btn-add" style="background: #ccc;" disabled>OUT OF STOCK</button>
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
+    </div>
 </div>
 {% endblock %}
-
-
-
-

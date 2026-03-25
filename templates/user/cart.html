@@ -1,81 +1,297 @@
 {% extends 'base.html' %}
-{% block title %}Shopping Cart{% endblock %}
+{% load static %}
+
+{% block title %}Shopping Cart - E-Canteen{% endblock %}
 
 {% block navbar %}
-<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
-    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
-    <div style="display: flex; gap: 24px;">
-        <a href="{% url 'cart_page' %}" style="font-weight: bold; color: #ff6b6b;">🛒 Cart ({{ cart_items.count }})</a>
-        
+<nav class="navbar">
+    <div class="nav-left">🍽️ E-Canteen</div>
+    <div class="nav-center">
+        <a href="/">Home</a>
+        <a href="{% url 'menu_page' %}">Menu</a>
+        <a href="{% url 'user_active_orders' %}">Orders</a>
         <a href="{% url 'user_profile' %}">Profile</a>
-        <a href="{% url 'change_password' %}">Change Password</a>
-        <a href="{% url 'user_logout' %}">Logout</a>
     </div>
-</div>
-<div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
-    <a href="{% url 'user_active_orders' %}" style="padding: 10px 20px; background-color: #869db6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Active Orders</a>
-</div>
+    <div class="nav-right">
+        <a href="{% url 'user_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 24px;">
-        <h1 style="margin-top: 0;">Shopping Cart</h1>
-        <hr style="margin: 16px 0;">
-        
+<div class="home-bg-blur"></div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary: #ff6b35;
+    --secondary: #3E2723;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0; padding: 0;
+    overflow-x: hidden;
+}
+
+/* Background Sync */
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(101, 70, 58, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR SYNC */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center a {
+    margin: 0 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+.nav-right .logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+}
+
+/* CONTAINER SYNC */
+.container-modern {
+    position: relative;
+    z-index: 2;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 50px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    animation: fadeInScale 0.8s ease;
+    color: white;
+}
+
+.page-container h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+/* TABLE STYLING */
+.table-responsive {
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 10px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+th {
+    background: rgba(62, 39, 35, 0.6);
+    color: white;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* QUANTITY BUTTONS */
+.qty-btn {
+    border: none;
+    background: var(--secondary);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 20%;
+    cursor: pointer;
+    transition: 0.3s;    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;}
+.qty-btn:hover { background: var(--primary); }
+
+/* BILLING BOX */
+.billing-box {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 30px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.total-text { font-size: 1.1rem; opacity: 0.9; }
+.total-price { font-size: 2.2rem; font-weight: 700; color: #ff9a56; }
+
+/* ACTION BUTTONS */
+.btn-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-custom {
+    padding: 14px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-continue {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.btn-place-order {
+    background: linear-gradient(135deg, var(--primary), #ff9a56);
+    color: white;
+    box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+}
+
+.btn-custom:hover { transform: translateY(-3px); opacity: 0.9; }
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .page-container { padding: 40px 20px; }
+    .nav-center { display: none; }
+    .billing-box { flex-direction: column; text-align: center; gap: 10px; }
+}
+</style>
+
+<div class="container-modern">
+    <div class="page-container">
+        <h1 style="color: #eee; size: 8px; font-size: 100%;"><i class="fas fa-shopping-cart"></i> Your Cart</h1>
+
         {% if cart_items %}
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-                <thead>
-                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                        <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Item Name</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Price</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Quantity</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Subtotal</th>
-                        <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cart_item in cart_items %}
-                        <tr style="border-bottom: 1px solid #dee2e6;">
-                            <td style="padding: 12px; border: 1px solid #dee2e6;">{{ cart_item.item.item_name }}</td>
-                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">₹{{ cart_item.item.price }}</td>
-                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                    <form method="post" action="{% url 'decrease_quantity' cart_item.id %}" style="margin: 0;">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th style="text-align: center;">Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cart_item in cart_items %}
+                        <tr>
+                            <td><strong>{{ cart_item.item.item_name }}</strong></td>
+                            <td>₹{{ cart_item.item.price }}</td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                    <form method="post" action="{% url 'decrease_quantity' cart_item.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" style="padding: 4px 6px; width: 28px; height: 28px; background-color: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">−</button>
+                                        <button class="qty-btn"><i class="fas fa-minus"></i></button>
                                     </form>
-                                    <span style="min-width: 25px; text-align: center; font-weight: bold;">{{ cart_item.quantity }}</span>
-                                    <form method="post" action="{% url 'increase_quantity' cart_item.id %}" style="margin: 0;">
+                                    <span style="font-weight: 700; font-size: 1.1rem;">{{ cart_item.quantity }}</span>
+                                    <form method="post" action="{% url 'increase_quantity' cart_item.id %}">
                                         {% csrf_token %}
-                                        <button type="submit" style="padding: 4px 6px; width: 28px; height: 28px; background-color: #51cf66; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">+</button>
+                                        <button class="qty-btn"><i class="fas fa-plus"></i></button>
                                     </form>
                                 </div>
                             </td>
-                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6; ">₹{{ cart_item.subtotal|floatformat:2 }}</td>
-                            <td style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">
-                                <form method="post" action="{% url 'remove_from_cart' cart_item.id %}" style="margin: 0;">
+                            <td><strong>₹{{ cart_item.subtotal|floatformat:2 }}</strong></td>
+                            <td>
+                                <form method="post" action="{% url 'remove_from_cart' cart_item.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" style="padding: 6px 12px; background-color: #868e96; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Remove</button>
+                                    <button style="background: none; border: none; color: #e74c3c; cursor: pointer;">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
                                 </form>
                             </td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            <div style="background-color: #f8f9fa; padding: 16px; border-radius: 6px; text-align: right; margin-bottom: 24px; border: 1px solid #dee2e6;">
-                <h2 style="margin: 0;">Total Amount: <span style="color: #007bff;">₹{{ total_amount|floatformat:2 }}</span></h2>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <a href="{% url 'menu_page' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-size: 14px;">Continue Shopping</a>
-                <a href="{% url 'place_order' %}" style="padding: 10px 20px; background-color: #51cf66; color: white; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px;">Place Order</a>
+
+            <div class="billing-box">
+                <div class="total-text">
+                    Total Items: <strong>{{ cart_items.count }}</strong>
+                </div>
+                <div style="text-align: right;">
+                    <span style="opacity: 0.8;">Total Amount Payable</span>
+                    <div class="total-price">₹{{ total_amount|floatformat:2 }}</div>
+                </div>
             </div>
+
+            <div class="btn-group">
+                <a href="{% url 'menu_page' %}" class="btn-custom btn-continue">
+                    <i class="fas fa-arrow-left"></i> CONTINUE SHOPPING
+                </a>
+                <a href="{% url 'place_order' %}" class="btn-custom btn-place-order">
+                    CONFIRM & PLACE ORDER <i class="fas fa-check-circle"></i>
+                </a>
+            </div>
+
         {% else %}
             <div style="text-align: center; padding: 40px;">
-                <p style="font-size: 1.2rem; color: #666;">Your cart is empty.</p>
-                <a href="{% url 'menu_page' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; margin-top: 20px; display: inline-block; font-size: 14px;">Continue Shopping</a>
+                <i class="fas fa-shopping-basket" style="font-size: 4rem; opacity: 0.3; margin-bottom: 20px;"></i>
+                <h3>Your cart is currently empty!</h3>
+                <p>Add some delicious meals to get started.</p>
+                <a href="{% url 'menu_page' %}" class="btn-custom btn-place-order" style="display: inline-block; margin-top: 20px;">BROWSE MENU</a>
             </div>
         {% endif %}
     </div>

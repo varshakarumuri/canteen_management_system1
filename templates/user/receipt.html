@@ -1,20 +1,166 @@
 {% extends 'base.html' %}
-{% block title %}Order Receipt{% endblock %}
+{% load static %}
+
+{% block title %}Order Receipt - E-Canteen{% endblock %}
+
+{% block navbar %}
+<nav class="navbar">
+    <div class="nav-left">🍽️ E-Canteen</div>
+    <div class="nav-center">
+        <a href="/">Home</a>
+        <a href="{% url 'menu_page' %}">Menu</a>
+        <a href="{% url 'user_active_orders' %}">Orders</a>
+        <a href="{% url 'user_profile' %}">Profile</a>
+    </div>
+    <div class="nav-right">
+        <a href="{% url 'user_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
+{% endblock %}
+
 {% block content %}
-    <h2>Order Receipt</h2>
-    {% if message %}
-        <h3 class="success">{{ message }}</h3>
-    {% endif %}
-    <h4>Your Order Summary:</h4>
-    <ul>
-        {% for item in ordered_items %}
-            <li>{{ item.item.item_name }} (x{{ item.quantity }}) - ₹{{ item.item.price|floatformat:2 }} each</li>
-        {% empty %}
-            <li>No items in your order.</li>
-        {% endfor %}
-    </ul>
-    <hr>
-    <h3>Total Bill: ₹{{ total_bill|floatformat:2 }}</h3>
-    <br>
-    <a href="{% url 'menu_page' %}"><button>Go Back to Menu</button></a>
+<div class="home-bg-blur"></div>
+
+<style>
+:root {
+    --primary: #ff6b35;
+    --secondary: #3E2723;
+    --transition: all 0.3s ease;
+}
+
+body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(50, 25, 15, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR - EXACT MENU PAGE STYLE */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center a {
+    margin: 0 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    transition: var(--transition);
+}
+.nav-center a:hover { color: var(--primary); }
+.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+.logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.receipt-wrapper {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.receipt-card {
+    width: 100%;
+    max-width: 550px;
+    padding: 50px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: fadeIn 0.6s ease;
+    color: white;
+}
+
+.receipt-card h2 { text-align: center; margin-bottom: 10px; font-weight: 700; font-size: 2rem; }
+
+.alert-custom {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid #2ecc71;
+    color: #2ecc71;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.order-info { text-align: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+.item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+.total-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    text-align: center;
+}
+.total-price { font-size: 2.2rem; font-weight: 700; color: #ff9a56; }
+
+.btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
+.btn-receipt {
+    width: 100%;
+    padding: 14px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.3s;
+}
+.btn-primary-receipt { background: linear-gradient(135deg,#ff6b35,#ff9a56); color: white; }
+.btn-secondary-receipt { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+
+@keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+</style>
+
+<div class="receipt-wrapper">
+    <div class="receipt-card">
+        <div style="text-align: center; margin-bottom: 15px;"><i class="fas fa-receipt" style="font-size: 3rem; color: #ff9a56;"></i></div>
+        <h2>Order Success!</h2>
+        {% if message %}<div class="alert-custom"><i class="fas fa-check-circle"></i> {{ message }}</div>{% endif %}
+        <div class="order-info"><p style="margin: 0; opacity: 0.7;">ORDER ID</p><h4 style="margin: 5px 0 0 0; letter-spacing: 2px;">#{{ order_id }}</h4></div>
+        <div class="items-list">
+            {% for item in ordered_items %}
+            <div class="item-row"><span>{{ item.quantity }} × {{ item.item.item_name }}</span><span>₹{{ item.item.price }}</span></div>
+            {% endfor %}
+        </div>
+        <div class="total-section"><p style="margin: 0; opacity: 0.8;">Total Paid</p><div class="total-price">₹{{ total_bill|floatformat:2 }}</div></div>
+        <div class="btn-group">
+            <a href="{% url 'user_active_orders' %}" class="btn-receipt btn-primary-receipt">Track My Order</a>
+            <a href="{% url 'menu_page' %}" class="btn-receipt btn-secondary-receipt">Back to Menu</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

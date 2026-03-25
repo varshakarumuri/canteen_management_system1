@@ -1,43 +1,207 @@
 {% extends 'base.html' %}
-{% block title %}Staff Profile{% endblock %}
+{% load static %}
 
-{% block navbar %}
-<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
-    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
-    <div style="display: flex; gap: 24px;">
-        <a href="{% url 'orders_page' %}">Active Orders</a>
-        <a href="{% url 'completed_orders' %}">Completed Orders</a>
-        <a href="{% url 'staff_logout' %}">Logout</a>
-    </div>
-</div>
-{% endblock %}
+{% block title %}Staff Profile - E-Canteen{% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px;">
-        <h1 style="text-align: center; color: #333; margin-top: 0;">Staff Profile</h1>
-        <hr style="margin: 20px 0;">
-        
-        <div style="text-align: left;">
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Name</label>
-                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.name }}</div>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Email</label>
-                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.email }}</div>
-            </div>
-            
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Staff ID</label>
-                <div style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background-color: #f5f5f5;">{{ staff.id }}</div>
-            </div>
-            
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <a href="{% url 'orders_page' %}" style="padding: 12px 30px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; text-align: center; font-weight: bold; font-size: 14px;">Back to Orders</a>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary: #ff6b35; 
+    --secondary: #3E2723;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Background - SYNCED */
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(50, 25, 15, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR - SYNCED */
+.navbar-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center { display: flex; gap: 1.5rem; }
+.nav-center a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    transition: var(--transition);
+}
+.nav-center a:hover { color: var(--primary); }
+.nav-right .logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.nav-right .logout:hover { background: rgba(255,255,255,0.1); }
+
+/* MAIN WRAPPER */
+.container-modern {
+    position: relative;
+    z-index: 2;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+/* PROFILE CARD (Matches page-container style) */
+.profile-card {
+    width: 100%;
+    max-width: 500px;
+    padding: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    animation: fadeInScale 0.8s ease;
+    text-align: center;
+}
+
+.profile-card h1 {
+    font-size: 2.5rem;
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Info fields */
+.info-box {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.info-box label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-box .info-content {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Button */
+.btn-back {
+    width: 100%;
+    padding: 14px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, #ff9a56 100%);
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+</style>
+
+<div class="home-bg-blur"></div>
+
+<nav class="navbar-modern">
+    <div class="nav-left">
+        <i class="fas fa-utensils"></i> E-Canteen Staff
+    </div>
+    
+    <div class="nav-center">
+        <a href="{% url 'orders_page' %}">Active Orders</a>
+        <a href="{% url 'completed_orders' %}">Completed Orders</a>
+        <a href="{% url 'staff_profile' %}">Profile</a>
+    </div>
+
+    <div class="nav-right">
+        <a href="{% url 'staff_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
+
+<div class="container-modern">
+    <div class="profile-card">
+        <h1>Staff Profile</h1>
+
+        <div class="info-box">
+            <label>Full Name</label>
+            <div class="info-content">
+                <i class="fas fa-user-circle"></i> {{ staff.name }}
             </div>
         </div>
+
+        <div class="info-box">
+            <label>Email Address</label>
+            <div class="info-content">
+                <i class="fas fa-envelope"></i> {{ staff.email }}
+            </div>
+        </div>
+
+        <div class="info-box">
+            <label>Employee Designation</label>
+            <div class="info-content">
+                <i class="fas fa-id-badge"></i> Canteen Staff (ID: #{{ staff.id }})
+            </div>
+        </div>
+
+        <a href="{% url 'orders_page' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> RETURN TO ORDERS
+        </a>
     </div>
 </div>
 {% endblock %}

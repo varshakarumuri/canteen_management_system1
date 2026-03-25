@@ -98,8 +98,10 @@ def completed_orders_view(request):
         return redirect('staff_login')
     
     # Get only today's completed orders
-    today = timezone.now().date()
-    completed = CompletedOrder.objects.filter(completed_at__date=today)
+    now = timezone.now()
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = start_of_day.replace(hour=23, minute=59, second=59, microsecond=999999)
+    completed = CompletedOrder.objects.filter(completed_at__gte=start_of_day, completed_at__lte=end_of_day)
     
     # Group orders by order_id
     grouped_completed_orders = {}

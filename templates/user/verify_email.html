@@ -1,44 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Verification - E-Canteen</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* 🔥 Blurred Background - Matched to Login */
+        .bg-blur {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+            filter: blur(10px);
+            z-index: -2;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: -1;
+        }
+
+        /* Center Layout - Matched to Login */
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        /* 🌟 Glass Container - Matched to Login */
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            color: white;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .login-box h2 {
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 5px;
+            outline: none;
+        }
+
+        /* Button - Matched to Login */
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(135deg, #ff6b35, #ff9a56);
+            color: white;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .links {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .links a {
+            color: #ffb88c;
+            text-decoration: none;
+        }
+
+        /* OTP Specific Styling */
+        .otp-input {
+            letter-spacing: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body style="background: #f4f6fb; min-height: 100vh; margin: 0;">
-    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;">
-        <div style="background: #fff; border-radius: 14px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 48px 36px; max-width: 400px; width: 100%; border-top: 4px solid #007bff;">
-            <h1 style="color: #007bff; margin-bottom: 24px; text-align: center; font-size: 1.8rem;">Email Verification</h1>
-            {% if error %}
-                <div style="background: #fff5f5; border-left: 4px solid #d90429; color: #c1121f; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px;">
-                    <strong>Error:</strong> {{ error }}
+
+<body>
+
+<div class="bg-blur"></div>
+<div class="bg-overlay"></div>
+
+<div class="login-wrapper">
+    <div class="login-box">
+
+        <h2><i class="fas fa-envelope-circle-check"></i> Verify Email</h2>
+
+        {% if error %}
+            <div class="alert alert-danger" style="font-size: 0.85rem;">{{ error }}</div>
+        {% endif %}
+
+        {% if not otp_sent %}
+            <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 25px;">Enter your email to receive a 6-digit verification code.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="name@example.com" required>
                 </div>
-            {% endif %}
-            {% if not otp_sent %}
-                <p style="color: #555; text-align: center; margin-bottom: 24px;">Please enter your email to receive an OTP.</p>
-                <form method="post" style="display: flex; flex-direction: column;">
-                    {% csrf_token %}
-                    <div style="margin-bottom: 20px; display: flex; flex-direction: column;">
-                        <label for="email" style="font-weight: 600; color: #333; margin-bottom: 8px;">Email</label>
-                        <input type="email" name="email" id="email" placeholder="Enter your email" required style="padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.3s;">
-                    </div>
-                    <button type="submit" style="padding: 12px 16px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);">Send OTP</button>
-                </form>
-            {% else %}
-                <p style="color: #555; text-align: center; margin-bottom: 24px;">An OTP has been sent to <strong style="color: #007bff;">{{ email }}</strong>. Please check your inbox.</p>
-                <form action="{% url 'user_register' %}" method="post" style="display: flex; flex-direction: column;">
-                    {% csrf_token %}
-                    <div style="margin-bottom: 20px; display: flex; flex-direction: column;">
-                        <label for="otp" style="font-weight: 600; color: #333; margin-bottom: 8px;">Enter OTP</label>
-                        <input type="text" name="otp" id="otp" placeholder="Enter the OTP" required style="padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.3s;">
-                    </div>
-                    <button type="submit" style="padding: 12px 16px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; width: 100%; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);">Validate OTP</button>
-                </form>
-            {% endif %}
-            <div style="text-align: center; margin-top: 25px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
-                <p style="color: #555; margin: 0; font-size: 0.95rem;">Already have an account? <a href="{% url 'user_login' %}" style="color: #007bff; text-decoration: none; font-weight: 600;">Login here</a></p>
+
+                <button type="submit" class="login-btn">Send Code</button>
+            </form>
+
+        {% else %}
+            <div class="alert alert-success" style="font-size: 0.85rem; background: rgba(25, 135, 84, 0.2); border: none; color: #fff;">
+                Code sent to <b>{{ email }}</b>
             </div>
+
+            <form action="{% url 'user_register' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Verification Code</label>
+                    <input type="text" name="otp" class="otp-input" placeholder="000000" maxlength="6" required>
+                </div>
+
+                <button type="submit" class="login-btn">Verify & Continue</button>
+            </form>
+        {% endif %}
+
+        <div class="links">
+            <p>Remembered your account? 
+                <a href="{% url 'user_login' %}">Login here</a>
+            </p>
         </div>
+
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

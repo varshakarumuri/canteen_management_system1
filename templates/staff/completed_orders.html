@@ -1,71 +1,330 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Completed Orders{% endblock %}
-
-{% block navbar %}
-<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
-    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
-    <div style="display: flex; gap: 24px;">
-        <a href="{% url 'orders_page' %}">Active Orders</a>
-        <a href="{% url 'staff_profile' %}">Profile</a>
-        <a href="{% url 'staff_logout' %}">Logout</a>
-    </div>
-</div>
-{% endblock %}
+{% block title %}Completed Orders - E-Canteen Staff{% endblock %}
 
 {% block content %}
-    <div>
-        <h1 style="display:none;">E-Canteen Staff Panel</h1>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2 style="margin: 0;">Completed Orders</h2>
-            <h3 style="margin: 0; color: #28a745;">Today: {{ today_orders_count }} Orders</h3>
-        </div>
-        <hr>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-    {% if not grouped_completed_orders %}
-        <p>No completed orders yet.</p>
-    {% else %}
-        <div class="menu-container">
-            {% for order_id, order_data in grouped_completed_orders.items %}
-                <div class="menu-item" style="width: 390px;">
-                    <div style="text-align: left; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="padding: 12px; background: #f0f8ff; border-radius: 6px;">
-                            <strong style="color: #007bff; display: block; margin-bottom: 4px;">Order ID: {{ order_id }}</strong>
-                            <div style="font-size: 0.9rem; color: #555; line-height: 1.5;">
-                                <strong>User:</strong> {{ order_data.user_name }}<br>
-                                <strong>Address:</strong> {{ order_data.user_address }}
-                            </div>
-                        </div>
-                        
-                        <div style="padding: 12px; background: #fefef8; border-radius: 6px;">
-                            <strong style="display: block; margin-bottom: 6px; color: #222;">Items:</strong>
-                            <ul style="margin: 0; padding-left: 16px;">
-                                {% for item in order_data.items %}
-                                    <li style="margin-bottom: 4px; font-size: 0.95rem;">{{ item.item.item_name }} <strong>x{{ item.quantity }}</strong></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
+:root {
+    --primary: #ff6b35; 
+    --secondary: #3E2723;
+    --success: #2ecc71;
+    --transition: all 0.3s ease;
+}
 
-                        <div style="padding: 12px; background: #f0fff4; border-radius: 6px; border-left: 4px solid #2ecc40;">
-                            <strong style="display: block; color: #2ecc40; font-size: 1.1rem;">Total: ₹{{ order_data.total|floatformat:2 }}</strong>
-                        </div>
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
 
-                        <div style="padding: 12px; background: #e8f4f8; border-radius: 6px;">
-                            <strong style="display: block; color: #555; font-size: 0.9rem;">Completed: {{ order_data.completed_at|date:"d M, Y - h:i A" }} IST</strong>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+/* Background Sync */
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(50, 25, 15, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR */
+.navbar-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center { display: flex; gap: 1.5rem; }
+.nav-center a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    transition: var(--transition);
+}
+.nav-center a:hover { color: var(--primary); }
+.nav-right .logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.nav-right .logout:hover { background: rgba(255,255,255,0.1); }
+
+/* MAIN CONTAINER */
+.container-modern {
+    position: relative;
+    z-index: 2;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 50px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    animation: fadeInScale 0.8s ease;
+}
+
+.orders-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.orders-header h1 {
+    font-size: 3rem;
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* COMPACT SUMMARY SECTION */
+.summary-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.summary-card {
+    background: rgba(46, 204, 113, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    border-radius: 15px;
+    padding: 15px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.summary-icon {
+    background: var(--success);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.summary-details {
+    text-align: left;
+}
+
+.summary-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.summary-total {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.summary-total span {
+    color: var(--success);
+}
+
+/* GRID & CARDS */
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+.order-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    transition: var(--transition);
+}
+
+.completed-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 50px;
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+
+.order-section { margin-bottom: 12px; }
+.order-items { list-style: none; padding-left: 0; }
+.order-items li {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    padding-left: 15px;
+    position: relative;
+}
+.order-items li::before {
+    content: '•';
+    color: var(--success);
+    position: absolute;
+    left: 0;
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 15px;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+/* EMPTY STATE */
+.empty-box {
+    text-align: center;
+    color: white;
+    padding: 50px 0;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media(max-width: 900px){
+    .orders-grid { grid-template-columns: 1fr; }
+    .page-container { padding: 40px 20px; }
+    .summary-card { padding: 15px 25px; }
+}
+</style>
+
+<div class="home-bg-blur"></div>
+
+<nav class="navbar-modern">
+    <div class="nav-left">
+        <i class="fas fa-utensils"></i> E-Canteen Staff
+    </div>
+    
+    <div class="nav-center">
+        <a href="{% url 'orders_page' %}">Active Orders</a>
+        <a href="{% url 'completed_orders' %}">Completed Orders</a>
+        <a href="{% url 'staff_profile' %}">Profile</a>
+    </div>
+
+    <div class="nav-right">
+        <a href="{% url 'staff_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
+
+<div class="container-modern">
+    <div class="page-container">
         
-        {% if grouped_completed_orders %}
-        <div style="display: flex; justify-content: flex-end; margin-top: 32px;">
-            <div style="padding: 20px; background: #f0fff4; border: 2px solid #2ecc40; border-radius: 8px; text-align: right; width: 300px;">
-                <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">Total Amount (Today)</div>
-                <div style="font-size: 2rem; font-weight: bold; color: #2ecc40;">₹{{ today_total_amount|floatformat:2 }}</div>
+        <div class="orders-header">
+            <h1>Completed Orders</h1>
+            <p style="color: rgba(255,255,255,0.6);">Review today's transaction history</p>
+        </div>
+
+        {% if not grouped_completed_orders %}
+            <div class="empty-box">
+                <h2>No Completed Orders Yet</h2>
+                <p>Orders will appear here once marked as ready.</p>
+            </div>
+        {% else %}
+
+        <div class="summary-container">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="summary-details">
+                    <p class="summary-label">Revenue Today</p>
+                    <div class="summary-total"><span>₹</span>{{ today_total_amount }}</div>
+                </div>
+                <div style="border-left: 1px solid rgba(255,255,255,0.2); height: 40px; margin: 0 10px;"></div>
+                <div class="summary-details">
+                    <p class="summary-label">Volume</p>
+                    <div class="summary-total">{{ today_orders_count }} <small style="font-size: 0.8rem; font-weight: 400; opacity: 0.7;">Orders</small></div>
+                </div>
             </div>
         </div>
+
+        <div class="orders-grid">
+            {% for order_id, order_data in grouped_completed_orders.items %}
+            <div class="order-card">
+                
+                <div class="completed-badge">
+                    <i class="fas fa-check-circle"></i> COMPLETED
+                </div>
+
+                <div class="order-section">
+                    <strong style="color: var(--success); font-size: 1.1rem;">Order #{{ order_id }}</strong>
+                </div>
+
+                <div class="order-section">
+                    <i class="fas fa-user" style="width: 20px; color: rgba(255,255,255,0.7);"></i> {{ order_data.user_name }}
+                </div>
+
+                <div class="order-section">
+                    <i class="fas fa-map-marker-alt" style="width: 20px; color: rgba(255,255,255,0.7);"></i> {{ order_data.user_address }}
+                </div>
+
+                <div class="order-section">
+                    <strong style="font-size: 0.9rem; color: rgba(255,255,255,0.8);">Items:</strong>
+                    <ul class="order-items">
+                        {% for item in order_data.items %}
+                            <li>{{ item.quantity }} × {{ item.item.item_name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="order-section" style="padding-top: 5px;">
+                    <strong style="font-size: 1.1rem;">Total Collected: <span style="color: var(--success);">₹{{ order_data.total }}</span></strong>
+                </div>
+
+                <div class="timestamp">
+                    <i class="far fa-clock"></i> {{ order_data.completed_at|date:"d M Y - h:i A" }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% endif %}
-    {% endif %}
+
     </div>
+</div>
 {% endblock %}

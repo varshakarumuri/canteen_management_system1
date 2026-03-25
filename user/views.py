@@ -160,22 +160,31 @@ def place_order(request):
     order_id = f"{user.id}-{str(order_number).zfill(5)}"
 
     cart_items_list = list(cart_items)
-    for item in cart_items_list:
-        ActiveOrders.objects.create(
-            user=user,
-            item=item.item,
-            quantity=item.quantity,
-            total_amount=item.item.price * item.quantity,
-            order_id=order_id
-        )
+    
+    # Create ActiveOrders for each cart item
+    try:
+        for item in cart_items_list:
+            ActiveOrders.objects.create(
+                user=user,
+                item=item.item,
+                quantity=item.quantity,
+                total_amount=item.item.price * item.quantity,
+                order_id=order_id
+            )
+        print(f'DEBUG: Order {order_id} created successfully with {len(cart_items_list)} items')
+    except Exception as e:
+        print(f'DEBUG: Error creating order: {str(e)}')
+        return redirect('cart_page')
 
     total_bill = sum(item.item.price * item.quantity for item in cart_items_list)
     receipt_context = {
         'ordered_items': cart_items_list,
         'total_bill': total_bill,
-        'message': 'Order placed successfully!'
+        'message': 'Order placed successfully!',
+        'order_id': order_id,
     }
 
+    # Delete cart items after successful order creation
     cart_items.delete()
 
     return render(request, 'user/receipt.html', receipt_context)
@@ -397,13 +406,17 @@ def user_active_orders(request):
         return redirect('user_login')
     
     user = Users.objects.get(id=user_id)
-    today = timezone.now().date()
+    
+    # Get today's date boundaries in current timezone
+    now = timezone.now()
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = start_of_day.replace(hour=23, minute=59, second=59, microsecond=999999)
     
     # Get today's active orders
-    active_orders = ActiveOrders.objects.filter(user=user, created_at__date=today).order_by('-created_at')
+    active_orders = ActiveOrders.objects.filter(user=user, created_at__gte=start_of_day, created_at__lte=end_of_day).order_by('-created_at')
     
     # Get today's completed orders
-    completed_orders = CompletedOrder.objects.filter(user=user, completed_at__date=today).order_by('-completed_at')
+    completed_orders = CompletedOrder.objects.filter(user=user, completed_at__gte=start_of_day, completed_at__lte=end_of_day).order_by('-completed_at')
     
     # Group active orders by order_id
     grouped_active_orders = {}

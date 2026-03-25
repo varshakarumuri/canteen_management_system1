@@ -1,66 +1,172 @@
 {% extends 'base.html' %}
-{% block title %}My Profile{% endblock %}
+{% load static %}
+
+{% block title %}My Profile - E-Canteen{% endblock %}
 
 {% block navbar %}
-<div class="navbar" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px;">
-    <div style="font-size: 1.7rem; font-weight: bold; color: #007bff; letter-spacing: 1px;">E-Canteen</div>
-    <div style="display: flex; gap: 24px;">
+<nav class="navbar">
+    <div class="nav-left">🍽️ E-Canteen</div>
+    <div class="nav-center">
+        <a href="/">Home</a>
         <a href="{% url 'menu_page' %}">Menu</a>
-        <a href="{% url 'user_profile' %}" style="font-weight: bold; color: #007bff;">Profile</a>
-        <a href="{% url 'change_password' %}">Change Password</a>
-        <a href="{% url 'user_logout' %}">Logout</a>
+        <a href="{% url 'user_active_orders' %}">Orders</a>
+        <a href="{% url 'user_profile' %}" style="color: var(--primary);">Profile</a>
     </div>
-</div>
-<div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
-    <a href="{% url 'user_active_orders' %}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">📦 Active Orders</a>
-</div>
+    <div class="nav-right">
+        <a href="{% url 'change_password' %}" class="logout" style="border-color: rgba(255,255,255,0.1);">Password</a>
+        <a href="{% url 'user_logout' %}" class="logout">Logout</a>
+    </div>
+</nav>
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 30px;">
-        <h1 style="text-align: center; color: #333; margin-top: 0;">User Profile</h1>
-        <hr style="margin: 20px 0;">
-        
-        {% if message %}
-            <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: bold;">
-                ✓ {{ message }}
-            </div>
-        {% endif %}
+<div class="home-bg-blur"></div>
 
-        {% if error %}
-            <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-weight: bold;">
-                ✗ {{ error }}
-            </div>
-        {% endif %}
+<style>
+/* CSS Variables & Global Sync */
+:root {
+    --primary: #ff6b35;
+    --secondary: #3E2723;
+    --transition: all 0.3s ease;
+}
 
-        <form method="post" style="text-align: left;">
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0; padding: 0;
+}
+
+/* Background Sync */
+.home-bg-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
+    z-index: -2;
+}
+.home-bg-blur::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(50, 25, 15, 0.65);
+    z-index: 1;
+}
+
+/* NAVBAR - EXACT MENU PAGE STYLE */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.nav-left { color: white; font-weight: 700; font-size: 1.2rem; }
+.nav-center a {
+    margin: 0 1rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    transition: var(--transition);
+}
+.nav-center a:hover { color: var(--primary); }
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+
+.logout {
+    color: white;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.logout:hover { background: rgba(255,255,255,0.1); }
+
+/* Profile Card */
+.profile-wrapper {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.profile-card {
+    width: 100%;
+    max-width: 550px;
+    padding: 50px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: fadeIn 0.6s ease;
+}
+
+.profile-card h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.form-group { margin-bottom: 20px; }
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.9);
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-save {
+    width: 100%;
+    padding: 14px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    background: linear-gradient(135deg,#ff6b35,#ff9a56);
+    color: white;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 10px 20px rgba(255, 107, 53, 0.2);
+}
+
+.btn-save:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 107, 53, 0.3); }
+
+.alert { padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; color: white; font-weight: 500; }
+.alert-success { background: rgba(46, 204, 113, 0.8); }
+.alert-danger { background: rgba(231, 76, 60, 0.8); }
+
+@keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+
+@media (max-width: 768px) { .nav-center { display: none; } .profile-card { padding: 30px; } }
+</style>
+
+<div class="profile-wrapper">
+    <div class="profile-card">
+        <h2>My Profile</h2>
+        {% if message %}<div class="alert alert-success">{{ message }}</div>{% endif %}
+        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+        <form method="post">
             {% csrf_token %}
-            
-            <div style="margin-bottom: 20px;">
-                <label for="name" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Name</label>
-                <input type="text" name="name" id="name" value="{{ user.name }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="email" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Email (cannot be changed)</label>
-                <input type="email" name="email" id="email" value="{{ user.email }}" disabled style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: #f5f5f5; cursor: not-allowed;">
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label for="phone_number" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Phone Number</label>
-                <input type="tel" name="phone_number" id="phone_number" value="{{ user.phone_number }}" required pattern="[0-9]{10}" maxlength="10" placeholder="Enter 10 digit number" title="Please enter exactly 10 digits" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
-            </div>
-            
-            <div style="margin-bottom: 24px;">
-                <label for="address" style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">Address</label>
-                <textarea name="address" id="address" rows="5" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: Arial, sans-serif;">{{ user.address }}</textarea>
-            </div>
-            
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button type="submit" style="padding: 12px 30px; background-color: #51cf66; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;">Save Changes</button>
-                <a href="{% url 'menu_page' %}" style="padding: 12px 30px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 6px; text-align: center; font-weight: bold; font-size: 14px;">Cancel</a>
-            </div>
+            <div class="form-group"><input type="text" name="name" value="{{ user.name }}" placeholder="Full Name" required></div>
+            <div class="form-group"><input type="email" value="{{ user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;"></div>
+            <div class="form-group"><input type="text" name="phone_number" value="{{ user.phone_number }}" placeholder="Phone Number" required></div>
+            <div class="form-group"><textarea name="address" rows="4" placeholder="Address">{{ user.address }}</textarea></div>
+            <button type="submit" class="btn-save">Save Changes</button>
         </form>
     </div>
 </div>
