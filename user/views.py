@@ -48,7 +48,7 @@ def verify_email(request):
         if Users.objects.filter(email=email).exists():
             return render(request, 'user/verify_email.html', {'error': 'Email already registered.'})
 
-        otp = str(random.randint(1000, 9999))
+        otp = str(random.randint(100000, 999999))
         otp_storage[email] = otp
         
         subject = "Your OTP for E-Canteen"
@@ -342,7 +342,7 @@ def forgot_password_verify(request):
         if not Users.objects.filter(email=email).exists():
             return render(request, 'user/forgot_password.html', {'error': 'Email not found.'})
 
-        otp = str(random.randint(1000, 9999))
+        otp = str(random.randint(100000, 999999))
         otp_storage[email] = otp
         
         subject = "Your OTP for Password Reset - E-Canteen"

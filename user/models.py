@@ -1,6 +1,9 @@
 # user/models.py
 
 from django.db import models
+import os
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 class Users(models.Model):
     name = models.CharField(max_length=100)
@@ -20,6 +23,13 @@ class Menu(models.Model):
 
     def __str__(self):
         return self.item_name
+    
+    def delete(self, *args, **kwargs):
+        # Delete the photo file from the filesystem before deleting the model
+        if self.photo:
+            if os.path.isfile(self.photo.path):
+                os.remove(self.photo.path)
+        super().delete(*args, **kwargs)
 
 class Cart(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
