@@ -30,7 +30,8 @@ class CompletedOrder(models.Model):
     ]
     
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    item = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    item = models.ForeignKey(Menu, on_delete=models.SET_NULL, null=True, blank=True)
+    item_name = models.CharField(max_length=255, default='Item (Deleted)')
     quantity = models.IntegerField()
     total_amount = models.FloatField()
     order_id = models.CharField(max_length=100)
@@ -38,4 +39,4 @@ class CompletedOrder(models.Model):
     completed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Completed {self.order_id} - {self.item.item_name} for {self.user.name}"
+        return f"Completed {self.order_id} - {self.item_name} for {self.user.name}"

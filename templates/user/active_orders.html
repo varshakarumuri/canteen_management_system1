@@ -235,8 +235,13 @@ body {
                     <ul class="item-list">
                         {% for item in order_data.items %}
                         <li class="item-row">
-                            <span><strong>{{ item.quantity }}x</strong> {{ item.item.item_name }}</span>
-                            <span>₹{{ item.item.price }}</span>
+                            {% if item.item %}
+                                <span><strong>{{ item.quantity }}x</strong> {{ item.item.item_name }}</span>
+                                <span>₹{{ item.item.price }}</span>
+                            {% else %}
+                                <span><strong>{{ item.quantity }}x</strong> {{ item.item_name }}</span>
+                                <span>₹{{ item.total_amount }}</span>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>

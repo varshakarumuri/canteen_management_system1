@@ -78,6 +78,7 @@ def order_ready(request, order_id):
             CompletedOrder.objects.create(
                 user=order.user,
                 item=order.item,
+                item_name=order.item.item_name,
                 quantity=order.quantity,
                 total_amount=order.total_amount,
                 order_id=order.order_id,
