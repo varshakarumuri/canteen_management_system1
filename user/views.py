@@ -435,11 +435,13 @@ def user_active_orders(request):
     grouped_completed_orders = {}
     for order in completed_orders:
         if order.order_id not in grouped_completed_orders:
+            # Check the status field to determine display status
+            status_display = 'Collected' if order.status == 'collected' else 'Ready to Collect'
             grouped_completed_orders[order.order_id] = {
                 'items': [],
                 'total': 0,
                 'completed_at': order.completed_at,
-                'status': 'Ready to Collect'
+                'status': status_display
             }
         grouped_completed_orders[order.order_id]['items'].append(order)
         grouped_completed_orders[order.order_id]['total'] += order.total_amount

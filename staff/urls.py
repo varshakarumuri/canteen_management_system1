@@ -12,4 +12,5 @@ urlpatterns = [
     # THIS IS THE LINE TO CHANGE:
     path('order-ready/<str:order_id>/', views.order_ready, name='order_ready'),
     path('completed/', views.completed_orders_view, name='completed_orders'),
+    path('mark-collected/', views.mark_order_collected, name='mark_order_collected'),
 ]

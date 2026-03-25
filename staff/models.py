@@ -24,11 +24,17 @@ class ActiveOrders(models.Model):
         return f"Order for {self.user.name} - {self.item.item_name}"
 
 class CompletedOrder(models.Model):
+    STATUS_CHOICES = [
+        ('ready', 'Ready to Collect'),
+        ('collected', 'Collected'),
+    ]
+    
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     item = models.ForeignKey(Menu, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     total_amount = models.FloatField()
     order_id = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ready')
     completed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

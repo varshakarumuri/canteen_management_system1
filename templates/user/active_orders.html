@@ -172,6 +172,7 @@ body {
 
 .status-pending { background: #fff4e6; color: #d35400; border: 1px solid #ffe8cc; }
 .status-ready { background: #e6fffa; color: #27ae60; border: 1px solid #c6f6d5; }
+.status-collected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
 .total-amt {
     font-size: 1.3rem;
@@ -245,6 +246,10 @@ body {
                     {% if order_data.status == 'Preparation in Process' %}
                     <div class="status-box status-pending">
                         <i class="fas fa-spinner fa-spin"></i> PREPARING...
+                    </div>
+                    {% elif order_data.status == 'Collected' %}
+                    <div class="status-box status-collected">
+                        <i class="fas fa-check-double"></i> COLLECTED
                     </div>
                     {% else %}
                     <div class="status-box status-ready">

@@ -222,6 +222,88 @@ body {
     padding: 50px 0;
 }
 
+/* CHECKBOX STYLING */
+.collected-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.collected-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: transparent;
+    transition: var(--transition);
+    position: relative;
+}
+
+.collected-checkbox:hover {
+    border-color: var(--primary);
+    background-color: rgba(255, 107, 53, 0.1);
+}
+
+.collected-checkbox:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.collected-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.collected-label {
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.loading-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.loading-spinner.active {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.success-message {
+    display: none;
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+.success-message.show {
+    display: inline;
+}
+
 @keyframes fadeInScale {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
@@ -320,6 +402,19 @@ body {
                 <div class="timestamp">
                     <i class="far fa-clock"></i> {{ order_data.completed_at|date:"d M Y - h:i A" }}
                 </div>
+
+                <div class="collected-checkbox-container">
+                    <input type="checkbox" 
+                           class="collected-checkbox" 
+                           data-order-id="{{ order_id }}" 
+                           id="collected-{{ order_id }}"
+                           {% if order_data.status == 'collected' %}checked disabled{% endif %}>
+                    <label for="collected-{{ order_id }}" class="collected-label">
+                        {% if order_data.status == 'collected' %}Collected{% else %}Mark as Collected{% endif %}
+                    </label>
+                    <div class="loading-spinner" id="spinner-{{ order_id }}"></div>
+                    <span class="success-message {% if order_data.status == 'collected' %}show{% endif %}" id="success-{{ order_id }}">✓ Collected</span>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -327,4 +422,98 @@ body {
 
     </div>
 </div>
+
+<script>
+// Handle collected checkbox
+document.querySelectorAll('.collected-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            const orderId = this.dataset.orderId;
+            const spinner = document.getElementById(`spinner-${orderId}`);
+            const successMsg = document.getElementById(`success-${orderId}`);
+            const checkboxElement = this;  // Save reference to checkbox
+            
+            // Show spinner
+            spinner.classList.add('active');
+            
+            // Get CSRF token
+            const csrfToken = getCSRFToken();
+            
+            // Send AJAX request
+            fetch('{% url "mark_order_collected" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `order_id=${encodeURIComponent(orderId)}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                spinner.classList.remove('active');
+                if (data.success) {
+                    successMsg.classList.add('show');
+                    // Keep checkbox checked and disable it
+                    checkboxElement.disabled = true;
+                    
+                    // Update label text
+                    const label = document.querySelector(`label[for="collected-${orderId}"]`);
+                    if (label) {
+                        label.textContent = 'Collected';
+                    }
+                    
+                    console.log('Order marked as collected successfully');
+                    
+                    // Reload page after 1.5 seconds to update user's active orders status
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                    checkboxElement.checked = false;
+                }
+            })
+            .catch(error => {
+                spinner.classList.remove('active');
+                console.error('Error:', error);
+                alert('Error marking order as collected: ' + error.message);
+                checkboxElement.checked = false;
+            });
+        }
+    });
+});
+
+// Get CSRF token from meta tag or cookie
+function getCSRFToken() {
+    // Try to get from meta tag first
+    let token = document.querySelector('meta[name="csrf-token"]');
+    if (token) {
+        return token.getAttribute('content');
+    }
+    
+    // Fallback to cookie
+    return getCookie('csrftoken');
+}
+
+// Get CSRF token from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}

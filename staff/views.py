@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from .models import Staff, ActiveOrders, CompletedOrder
 from django.core.mail import send_mail
 from django.conf import settings
+from django.http import JsonResponse
 
 def send_custom_email(subject, message, recipient_list):
     try:
@@ -107,12 +108,14 @@ def completed_orders_view(request):
     grouped_completed_orders = {}
     for order in completed:
         if order.order_id not in grouped_completed_orders:
+            # Get the status from the first item's order (all items in same order have same status)
             grouped_completed_orders[order.order_id] = {
                 'items': [],
                 'user_name': order.user.name,
                 'user_address': order.user.address,
                 'total': 0,
-                'completed_at': order.completed_at
+                'completed_at': order.completed_at,
+                'status': order.status  # Include the status field
             }
         grouped_completed_orders[order.order_id]['items'].append(order)
         grouped_completed_orders[order.order_id]['total'] += order.total_amount
@@ -137,3 +140,27 @@ def staff_logout(request):
     if 'staff_id' in request.session:
         del request.session['staff_id']
     return redirect('home')
+
+def mark_order_collected(request):
+    """Mark an order as collected via AJAX"""
+    if request.method == 'POST':
+        staff_id = request.session.get('staff_id')
+        if not staff_id:
+            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=401)
+        
+        order_id = request.POST.get('order_id')
+        if not order_id:
+            return JsonResponse({'success': False, 'error': 'Order ID not provided'}, status=400)
+        
+        try:
+            # Update all items in this order to 'collected' status
+            completed_orders = CompletedOrder.objects.filter(order_id=order_id)
+            if not completed_orders.exists():
+                return JsonResponse({'success': False, 'error': 'Order not found'}, status=404)
+            
+            completed_orders.update(status='collected')
+            return JsonResponse({'success': True, 'message': 'Order marked as collected'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
