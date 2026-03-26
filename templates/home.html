@@ -6,380 +6,250 @@
 {% endblock navbar %}
 
 {% block content %}
-<div class="home-bg-blur"></div>
 
-<!-- Hero Section with Food Background -->
-<div class="hero-section">
-    <div class="hero-logo">E-Canteen</div>
-    
-    
-    <div class="hero-content">
-        <h1 class="hero-title">Welcome to E-Canteen</h1>
-        <p class="hero-subtitle">Your go-to platform for ordering delicious meals anytime, anywhere.</p>
+<!-- Blurred Background -->
+<div class="bg-blur"></div>
+<div class="bg-overlay"></div>
+
+<!-- Home Container -->
+<div class="home-wrapper">
+    <div class="home-box">
         
-        <div class="hero-buttons">
-            <a href="/user/login/" class="btn-explore">
+        <!-- Logo -->
+        <div class="home-logo">
+            <i class="fas fa-utensils"></i> E-Canteen
+        </div>
+
+        <!-- Welcome Title -->
+        <h1 class="home-title">Welcome to E-Canteen</h1>
+        
+        <!-- Subtitle -->
+        <p class="home-subtitle">Your go-to platform for ordering delicious meals anytime, anywhere.</p>
+        
+        <!-- Main Action Buttons -->
+        <div class="home-buttons">
+            <a href="/user/login/" class="home-btn home-btn-primary">
                 <i class="fas fa-utensils"></i> EXPLORE MENU
             </a>
-            <a href="/user/login/" class="btn-order">
+            <a href="/user/login/" class="home-btn home-btn-secondary">
                 <i class="fas fa-shopping-cart"></i> ORDER NOW
             </a>
         </div>
 
-        <div class="login-links">
-            <a href="/staff/login/"><i class="fas fa-sign-in-alt"></i> Staff Login</a>
-            <a href="/admin/login/"><i class="fas fa-lock"></i> Admin</a>
+        <!-- Login Links -->
+        <div class="home-links">
+            <p>
+                <a href="/staff/login/"><i class="fas fa-sign-in-alt"></i> Staff Login</a>
+                <span class="divider">•</span>
+                <a href="/admin/login/"><i class="fas fa-lock"></i> Admin</a>
+            </p>
         </div>
+
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="features-section">
-    <div class="container-modern">
-        <div class="page-container">
-            <!-- Features Section -->
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <h3>For Customers</h3>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Easy menu browsing</li>
-                        <li><i class="fas fa-check-circle"></i> Simple ordering process</li>
-                        <li><i class="fas fa-check-circle"></i> Real-time order tracking</li>
-                        <li><i class="fas fa-check-circle"></i> Secure payments</li>
-                    </ul>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <h3>For Staff</h3>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Manage orders efficiently</li>
-                        <li><i class="fas fa-check-circle"></i> Track order status</li>
-                        <li><i class="fas fa-check-circle"></i> View order history</li>
-                        <li><i class="fas fa-check-circle"></i> Organize workflow</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <style>
-    * {
+    /* ========================================
+       HOME PAGE - UNIFORM GLASSMORPHISM DESIGN
+       Matches login page styling for consistency
+       ======================================== */
+
+    body, html {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
+        height: 100%;
+        font-family: 'Segoe UI', sans-serif;
     }
 
-    body {
-        position: relative;
-        overflow-x: hidden;
-    }
-
-    .home-bg-blur {
+    /* 🔥 Blurred Background */
+    .bg-blur {
         position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
         height: 100%;
         background: url('{% static "images/food-bg.png" %}') center/cover no-repeat;
-        filter: none;
+        filter: blur(10px);
         z-index: -2;
     }
 
-    .home-bg-blur::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
+    .bg-overlay {
+        position: fixed;
         width: 100%;
         height: 100%;
-        background: rgba(50, 25, 15, 0.65);
-        z-index: 1;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
     }
 
-    /* Hero Section */
-    .hero-section {
-        position: relative;
-        z-index: 1;
-        min-height: 100vh;
+    /* Home Wrapper - Centered Layout */
+    .home-wrapper {
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
+        min-height: 100vh;
+        padding: 20px;
     }
 
-    .hero-logo {
-        position: absolute;
-        top: 30px;
-        right: 40px;
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--primary);
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-nav {
-        position: absolute;
-        top: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.9);
-        letter-spacing: 1px;
-        font-weight: 500;
-    }
-
-    .hero-nav a {
-        color: rgba(255, 255, 255, 0.9);
-        text-decoration: none;
-        transition: color 0.3s;
-        margin: 0 8px;
-        display: inline-block;
-    }
-
-    .hero-nav a:hover {
-        color: var(--primary);
-    }
-
-    .hero-nav span {
-        margin: 0 6px;
-        opacity: 0.7;
-    }
-
-    .hero-content {
-        text-align: center;
-        max-width: 700px;
-        margin: 0 auto;
-        padding: 60px 50px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
+    /* 🌟 Glass Container - Matches Login Box */
+    .home-box {
+        width: 100%;
+        max-width: 550px;
+        padding: 50px 40px;
         border-radius: 20px;
-        background: rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(5px);
-        animation: fadeInScale 0.8s ease;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        color: white;
+        text-align: center;
+        animation: slideInDown 0.6s ease;
     }
 
-    .hero-title {
-        font-size: 3.5rem;
-        color: #ffffff;
+    /* Logo */
+    .home-logo {
+        font-size: 2rem;
         font-weight: 700;
         margin-bottom: 20px;
-        line-height: 1.2;
-        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        color: #ffb88c;
+        letter-spacing: 1px;
     }
 
-    .hero-subtitle {
-        font-size: 1.2rem;
-        color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 40px;
-        line-height: 1.8;
+    /* Title */
+    .home-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.3;
+        color: white;
+    }
+
+    /* Subtitle */
+    .home-subtitle {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 35px;
+        line-height: 1.6;
         font-weight: 400;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .hero-buttons {
+    /* Buttons Container */
+    .home-buttons {
         display: flex;
-        gap: 20px;
+        gap: 15px;
         justify-content: center;
         flex-wrap: wrap;
         margin-bottom: 30px;
     }
 
-    .btn-explore,
-    .btn-order {
-        padding: 14px 32px;
-        font-weight: 700;
-        border-radius: 50px;
+    /* Button Styles */
+    .home-btn {
+        padding: 12px 26px;
+        font-weight: 600;
+        border-radius: 30px;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         font-size: 0.95rem;
-        border: 2px solid;
-        transition: all 0.3s ease;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
-        letter-spacing: 0.5px;
+        white-space: nowrap;
     }
 
-    .btn-explore {
-        background: linear-gradient(135deg, var(--primary) 0%, #ff9a56 100%);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .btn-explore:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+    /* Primary Button - Orange Gradient */
+    .home-btn-primary {
+        background: linear-gradient(135deg, #ff6b35, #ff9a56);
         color: white;
     }
 
-    .btn-order {
-        background: rgba(255, 255, 255, 0.95);
-        color: var(--secondary);
-        border-color: white;
-        font-weight: 700;
-    }
-
-    .btn-order:hover {
-        background: white;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
-    }
-
-    .login-links {
-        display: flex;
-        gap: 30px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .login-links a {
-        color: rgba(255, 255, 255, 0.9);
+    .home-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+        color: white;
         text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.3s;
+    }
+
+    /* Secondary Button - Semi-transparent White */
+    .home-btn-secondary {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .home-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Login Links */
+    .home-links {
+        margin-top: 25px;
+        font-size: 0.95rem;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .home-links p {
+        margin: 0;
         display: flex;
         align-items: center;
-        gap: 6px;
-    }
-
-    .login-links a:hover {
-        color: var(--primary);
-    }
-
-    /* Features Section */
-    .features-section {
-        position: relative;
-        z-index: 1;
-        background: #f8f9fa;
-        padding: 80px 20px;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 40px;
-        margin-bottom: 0;
-    }
-
-    .feature-card {
-        background: white;
-        border-radius: 16px;
-        padding: 40px 30px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        transition: var(--transition);
-        text-align: center;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 50px rgba(255, 107, 53, 0.15);
-    }
-
-    .feature-icon {
-        font-size: 3.5rem;
-        color: var(--primary);
-        margin-bottom: 20px;
-    }
-
-    .feature-card h3 {
-        color: var(--secondary);
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 25px;
-    }
-
-    .feature-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        text-align: left;
-    }
-
-    .feature-list li {
-        color: #2c3e50;
-        font-size: 0.95rem;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: flex-start;
+        justify-content: center;
         gap: 12px;
     }
 
-    .feature-list i {
-        color: var(--primary);
-        font-size: 1.1rem;
-        margin-top: 2px;
-        flex-shrink: 0;
+    .home-links a {
+        color: #ffb88c;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
     }
 
-    @keyframes fadeInScale {
+    .home-links a:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+    .divider {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Animation */
+    @keyframes slideInDown {
         from {
             opacity: 0;
-            transform: scale(0.95);
+            transform: translateY(-30px);
         }
         to {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
         }
     }
 
+    /* Responsive Design */
     @media (max-width: 768px) {
-        .hero-logo {
-            font-size: 1rem;
-            right: 20px;
-            top: 20px;
-        }
-
-        .hero-nav {
-            top: 70px;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-
-        .hero-nav a {
-            margin: 0 4px;
-        }
-
-        .hero-content {
-            padding: 40px 25px;
+        .home-box {
+            padding: 40px 30px;
             max-width: 90%;
         }
 
-        .hero-title {
-            font-size: 2.2rem;
+        .home-title {
+            font-size: 2rem;
         }
 
-        .hero-subtitle {
-            font-size: 1rem;
+        .home-subtitle {
+            font-size: 0.95rem;
         }
 
-        .hero-buttons {
+        .home-buttons {
             flex-direction: column;
-            gap: 15px;
         }
 
-        .btn-explore,
-        .btn-order {
+        .home-btn {
             width: 100%;
             justify-content: center;
-        }
-
-        .login-links {
-            gap: 20px;
-        }
-
-        .features-section {
-            padding: 60px 20px;
-        }
-
-        .features-grid {
-            gap: 30px;
         }
     }
 </style>
